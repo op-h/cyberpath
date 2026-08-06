@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# TODO(deploy): replace op-h with your GitHub username (or custom domain).
+Sitemap: https://op-h.github.io/cyberpath/sitemap.xml

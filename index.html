@@ -1,0 +1,221 @@
+<!doctype html>
+<!-- No hardcoded data-theme: the CSS prefers-color-scheme default governs the no-JS
+     path; app.js sets data-theme explicitly (with the saved preference) on boot. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CYBERPATH — Build your cybersecurity learning roadmap</title>
+  <meta name="description" content="Answer a few quick questions and get a personalised, downloadable cybersecurity roadmap — phases, timeframes, certifications and free-or-paid resources across six career tracks.">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <!-- GitHub Pages can't set response headers, so the CSP ships as a meta tag.
+       style-src allows inline because the app sets a few style="" attributes at runtime. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'none'">
+  <!-- TODO(deploy): replace the placeholder origin below with your real Pages URL. -->
+  <link rel="canonical" href="https://op-h.github.io/cyberpath/">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CYBERPATH">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="CYBERPATH — Build your cybersecurity learning roadmap">
+  <meta property="og:description" content="A personalised, downloadable roadmap into cybersecurity: phases, timeframes, certifications and free-or-paid resources.">
+  <meta property="og:url" content="https://op-h.github.io/cyberpath/">
+  <meta name="twitter:card" content="summary">
+
+  <!-- Inline SVG favicon: shield + terminal prompt, no extra request -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M9 12l4 4-4 4' fill='none' stroke='%239fef00' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='16' y1='21' x2='23' y2='21' stroke='%239fef00' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <!-- Structured data: describes the tool for search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CYBERPATH",
+    "url": "https://op-h.github.io/cyberpath/",
+    "applicationCategory": "EducationalApplication",
+    "description": "A free tool that builds a personalised cybersecurity learning roadmap with phases, timeframes, certifications and resources.",
+    "operatingSystem": "Any",
+    "isAccessibleForFree": true,
+    "featureList": ["Personalised roadmap generator", "6 career tracks", "Certification ladders", "Free and paid resources", "Downloadable plan"],
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="CYBERPATH home">
+      <span class="brand__mark" aria-hidden="true">&gt;_</span>
+      <span class="brand__name">CYBER<span class="brand__accent">PATH</span></span>
+    </a>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
+      <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+      <span class="theme-toggle__label">Theme</span>
+    </button>
+  </header>
+
+  <main id="main" tabindex="-1">
+
+    <!-- HERO -->
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <div class="hero__inner">
+        <p class="hero__eyebrow">Your route into cybersecurity, mapped</p>
+        <h1 class="hero__title" id="hero-title">
+          Stop guessing.<br>Get a <span class="grad">real roadmap.</span>
+        </h1>
+        <p class="hero__lede">
+          Answer a few quick questions. We’ll build you a phase-by-phase plan with
+          realistic timeframes, the certifications worth chasing, and resources tuned
+          to your budget — free or paid. Then download it.
+        </p>
+        <div class="hero__actions">
+          <button type="button" class="btn btn--primary btn--lg" id="start-btn">
+            Build my roadmap <span aria-hidden="true">→</span>
+          </button>
+          <a class="btn btn--ghost btn--lg" href="#tracks-static">Browse the tracks</a>
+        </div>
+        <noscript>
+          <p class="hero__lede" style="margin-top:1rem">
+            The interactive planner needs JavaScript. With it off, you can still
+            <a href="#tracks-static">browse the six tracks</a> and their certification paths below.
+          </p>
+        </noscript>
+
+        <ul class="hero__stats" aria-label="What the planner covers">
+          <li><strong>6</strong><span>career tracks</span></li>
+          <li><strong>20+</strong><span>certifications mapped</span></li>
+          <li><strong>Free</strong><span>&amp; paid resources</span></li>
+        </ul>
+      </div>
+
+      <div class="hero__terminal" aria-hidden="true">
+        <div class="term">
+          <div class="term__bar"><span></span><span></span><span></span></div>
+          <pre class="term__body"><code><span class="c-mut">root@cyberpath</span>:<span class="c-acc">~</span>$ ./plan --interactive
+<span class="c-dim">[*]</span> profiling learner...
+<span class="c-dim">[*]</span> track      = <span class="c-acc">offensive</span>
+<span class="c-dim">[*]</span> level      = beginner
+<span class="c-dim">[*]</span> hours/week = 8
+<span class="c-dim">[*]</span> budget     = mixed
+<span class="c-ok">[+]</span> plan ready: <span class="c-acc">7 phases · ~14 months</span>
+<span class="c-ok">[+]</span> certs: eJPT → CPTS → OSCP
+<span class="c-mut">root@cyberpath</span>:<span class="c-acc">~</span>$ _</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- WIZARD (progressively enhanced; hidden until JS + Start) -->
+    <section class="wizard" id="wizard" hidden aria-labelledby="wizard-heading">
+      <div class="wizard__inner">
+        <div class="wizard__head">
+          <h1 class="wizard__heading" id="wizard-heading">Build your roadmap</h1>
+          <p class="wizard__progress-text" role="status">Step <span id="step-now">1</span> of <span id="step-total">8</span></p>
+        </div>
+
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="1" aria-valuetext="Step 1 of 8" aria-label="Questionnaire progress">
+          <div class="progress__bar" id="progress-bar"></div>
+        </div>
+
+        <form id="quiz-form" novalidate>
+          <div id="steps"><!-- fieldsets injected by app.js --></div>
+
+          <div class="wizard__nav">
+            <button type="button" class="btn btn--ghost" id="back-btn" hidden><span aria-hidden="true">←</span> Back</button>
+            <button type="button" class="btn btn--primary" id="next-btn">Next <span aria-hidden="true">→</span></button>
+            <button type="submit" class="btn btn--primary" id="generate-btn" hidden>Generate my plan <span aria-hidden="true">✦</span></button>
+          </div>
+          <p class="wizard__hint" id="step-error" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- RESULT (populated by app.js) -->
+    <section class="result" id="result" hidden aria-labelledby="result-heading" tabindex="-1">
+      <!-- app.js injects the generated plan here -->
+    </section>
+
+    <!-- STATIC REFERENCE: doubles as the no-JS fallback (an ADR records that the
+         interactive planner is an app shell). With JS on, app.js re-renders the grid
+         from the shared data model as a "browse the tracks" section; with JS off, the
+         hand-written <noscript> mirror below carries the same content. -->
+    <section class="static-ref" id="tracks-static" aria-labelledby="static-heading">
+      <div class="static-ref__inner">
+        <p class="static-note" id="static-note">
+          Prefer to skim first? Here are the six tracks. Use “Build my roadmap” above for a
+          plan tailored to your experience, time and budget.
+        </p>
+        <h2 id="static-heading">The six cybersecurity tracks</h2>
+        <div id="static-tracks" class="static-grid">
+          <!-- app.js fills this from the same data; a hand-written summary follows
+               in <noscript> so it also renders with JS fully disabled. -->
+        </div>
+
+        <noscript>
+          <div class="static-grid">
+            <article class="static-card"><h3>Offensive / Pentesting</h3>
+              <p>Ethical hacking and red teaming. Path: networking &amp; Linux → web/network attacks → privilege escalation &amp; Active Directory → certification → portfolio.</p>
+              <p><strong>Certs:</strong> eJPT (INE) → HTB CPTS / TCM PNPT → OffSec OSCP → OSEP/OSWE.</p>
+              <p><strong>Free:</strong> TryHackMe, PortSwigger Web Security Academy, Hack The Box, OverTheWire.</p>
+            </article>
+            <article class="static-card"><h3>Defensive / Blue Team (SOC)</h3>
+              <p>Detection and response. Path: foundations → logs &amp; SIEM → incident response &amp; threat hunting → certification → home SOC lab.</p>
+              <p><strong>Certs:</strong> Security+ → Microsoft SC-200 → CompTIA CySA+ / BTL1 → GIAC GCIH.</p>
+              <p><strong>Free:</strong> LetsDefend, Blue Team Labs Online, CyberDefenders, Splunk free training.</p>
+            </article>
+            <article class="static-card"><h3>Governance, Risk &amp; Compliance</h3>
+              <p>Security as a business function. Path: frameworks &amp; risk → audit &amp; compliance → certification → documentation portfolio.</p>
+              <p><strong>Certs:</strong> ISC2 CC (often free) → Security+ → ISACA CISA / CISM → ISC2 CISSP.</p>
+              <p><strong>Free:</strong> NIST CSF, ISC2 CC training, CIS Controls, SANS policy templates.</p>
+            </article>
+            <article class="static-card"><h3>Cloud Security</h3>
+              <p>Securing AWS, Azure and GCP. Path: cloud fundamentals → IAM &amp; hardening → certification → secured reference deployment.</p>
+              <p><strong>Certs:</strong> Microsoft SC-900 / AWS Cloud Practitioner → AZ-500 / AWS Security Specialty → SC-100 / CCSP.</p>
+              <p><strong>Free:</strong> Microsoft Learn, AWS Skill Builder, flAWS/CloudGoat, AWS Well-Architected.</p>
+            </article>
+            <article class="static-card"><h3>Application Security / DevSecOps</h3>
+              <p>Securing code and pipelines. Path: OWASP Top 10 → secure code &amp; DevSecOps → certification → bug bounty portfolio.</p>
+              <p><strong>Certs:</strong> Burp Suite Certified Practitioner → INE eWPT → GIAC GWEB / OffSec OSWE.</p>
+              <p><strong>Free:</strong> PortSwigger Web Security Academy, OWASP Juice Shop, OWASP Cheat Sheets.</p>
+            </article>
+            <article class="static-card"><h3>Digital Forensics &amp; Incident Response</h3>
+              <p>Investigating breaches. Path: disk/memory/log forensics → IR &amp; malware triage → certification → case portfolio.</p>
+              <p><strong>Certs:</strong> Security Blue Team BTL1 → INE eCDFP → GIAC GCFA / GREM.</p>
+              <p><strong>Free:</strong> Autopsy, Volatility, 13Cubed (YouTube), CyberDefenders.</p>
+            </article>
+          </div>
+          <p class="static-note">Enable JavaScript to generate a personalised, downloadable plan tailored to your experience, time and budget.</p>
+        </noscript>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      <strong>CYBERPATH</strong> — a free, open roadmap builder.
+      Certification costs and program availability change; always verify on the
+      provider’s site before paying. Only ever test systems you are authorised to test.
+    </p>
+    <p class="site-footer__meta">Built as a static site · works offline · no tracking · no account.</p>
+    <p class="credit">
+      <span class="credit__by">Designed by</span>
+      <a class="credit__link" href="https://tryhackme.com/p/oph" target="_blank" rel="noopener noreferrer">
+        <span class="credit__mark" aria-hidden="true">&gt;_</span>oph<span class="visually-hidden"> (TryHackMe profile, opens in a new tab)</span>
+        <span class="credit__arrow" aria-hidden="true">↗</span>
+      </a>
+    </p>
+  </footer>
+
+  <!-- Print-only watermark; repeats on every page of the downloaded PDF. -->
+  <div class="print-watermark" aria-hidden="true"><span>CYBERPATH<small>tryhackme.com/p/oph</small></span></div>
+
+  <!-- defer keeps execution order (data.js → app.js) while freeing the main thread. -->
+  <script defer src="assets/js/data.js"></script>
+  <script defer src="assets/js/app.js"></script>
+</body>
+</html>
