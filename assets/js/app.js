@@ -162,6 +162,13 @@
     els.wizard.scrollIntoView({ block: 'start' });
   }
 
+  // A question is active unless its showIf(answers) predicate says otherwise. This is
+  // what lets the aptitude block appear only on the "I'm not sure yet" path.
+  function isActive(i) { var q = QUESTIONS[i]; return !q.showIf || !!q.showIf(answers); }
+  function activeIndices() { var r = []; for (var i = 0; i < QUESTIONS.length; i++) if (isActive(i)) r.push(i); return r; }
+  function nextActive(i) { for (var j = i + 1; j < QUESTIONS.length; j++) if (isActive(j)) return j; return -1; }
+  function prevActive(i) { for (var j = i - 1; j >= 0; j--) if (isActive(j)) return j; return -1; }
+
   function showStep(i, focus) {
     stepEls.forEach(function (s, idx) { s.hidden = idx !== i; });
     var active = stepEls[i];
@@ -171,19 +178,24 @@
       requestAnimationFrame(function () { requestAnimationFrame(function () { active.classList.add('step-enter'); }); });
     }
 
-    els.stepNow.textContent = i + 1;
-    var pct = ((i + 1) / QUESTIONS.length) * 100;
-    els.bar.style.width = pct + '%';
-    els.progress.setAttribute('aria-valuenow', String(i + 1));
-    els.progress.setAttribute('aria-valuetext', 'Step ' + (i + 1) + ' of ' + QUESTIONS.length);
+    var act = activeIndices();
+    var pos = act.indexOf(i); if (pos < 0) pos = 0;
+    var total = act.length;
+    els.stepNow.textContent = pos + 1;
+    els.stepTotal.textContent = total;
+    els.bar.style.width = ((pos + 1) / total) * 100 + '%';
+    els.progress.setAttribute('aria-valuemax', String(total));
+    els.progress.setAttribute('aria-valuenow', String(pos + 1));
+    els.progress.setAttribute('aria-valuetext', 'Step ' + (pos + 1) + ' of ' + total);
 
-    els.back.hidden = i === 0;
-    var last = i === QUESTIONS.length - 1;
+    els.back.hidden = pos === 0;
+    var last = pos === total - 1;
     els.next.hidden = last;
     els.generate.hidden = !last;
     els.error.textContent = '';
 
     if (focus) { $('.step__legend', active).focus(); }
+    updateLean();
   }
 
   function readStep(i) {
@@ -212,24 +224,48 @@
 
   els.next.addEventListener('click', function () {
     if (!validateStep(stepIndex)) return;
-    commitStep(stepIndex);
-    if (stepIndex < QUESTIONS.length - 1) { stepIndex++; showStep(stepIndex, true); }
+    commitStep(stepIndex); // commit BEFORE computing the next active step (goal drives showIf)
+    var nx = nextActive(stepIndex);
+    if (nx !== -1) { stepIndex = nx; showStep(stepIndex, true); }
   });
   els.back.addEventListener('click', function () {
-    if (stepIndex > 0) { commitStep(stepIndex); stepIndex--; showStep(stepIndex, true); }
+    commitStep(stepIndex);
+    var pv = prevActive(stepIndex);
+    if (pv !== -1) { stepIndex = pv; showStep(stepIndex, true); }
   });
 
   // Clear the validation error the moment a choice is made. We deliberately do NOT
   // auto-advance — keyboard and screen-reader users must keep control of pacing.
   els.steps.addEventListener('change', function (e) {
-    if (e.target && (e.target.type === 'radio' || e.target.type === 'checkbox')) { els.error.textContent = ''; }
+    if (e.target && (e.target.type === 'radio' || e.target.type === 'checkbox')) { els.error.textContent = ''; updateLean(); }
   });
+
+  // Live "leaning toward X" readout — shows the recommender working, in real time,
+  // as the learner answers the aptitude questions on the "I'm not sure yet" path.
+  function updateLean() {
+    var lean = byId('wizard-lean');
+    if (!lean || !window.CYBERPATH_MATCH) return;
+    var q = QUESTIONS[stepIndex];
+    var goalVal = answers.goal || (q.id === 'goal' ? readStep(stepIndex) : null);
+    if (goalVal !== 'unsure') { lean.hidden = true; return; }
+    var temp = {}; for (var k in answers) temp[k] = answers[k];
+    if (q.id.indexOf('apt_') === 0) { var v = readStep(stepIndex); if (v) temp[q.id] = v; }
+    var hasApt = Object.keys(temp).some(function (k) { return k.indexOf('apt_') === 0 && temp[k]; });
+    if (!hasApt) { lean.hidden = true; return; }
+    var ranked = window.CYBERPATH_MATCH.scoreTracks(temp);
+    var top = ranked[0];
+    var name = DATA.TRACKS[top.track] ? DATA.TRACKS[top.track].short : top.track;
+    lean.hidden = false;
+    lean.innerHTML = '<span class="wizard__lean-k">Leaning toward</span> <strong>' + esc(name) + '</strong> <span class="wizard__lean-pct">' + top.confidencePct + '% fit</span>';
+  }
 
   els.form.addEventListener('submit', function (e) {
     e.preventDefault();
+    var act = activeIndices();
+    var isLast = stepIndex === act[act.length - 1];
     // Enter on an earlier step must ADVANCE, never generate a half-filled plan (B1).
-    if (stepIndex < QUESTIONS.length - 1) {
-      if (validateStep(stepIndex)) { commitStep(stepIndex); stepIndex++; showStep(stepIndex, true); }
+    if (!isLast) {
+      if (validateStep(stepIndex)) { commitStep(stepIndex); var nx = nextActive(stepIndex); if (nx !== -1) { stepIndex = nx; showStep(stepIndex, true); } }
       return;
     }
     if (!validateStep(stepIndex)) return;
@@ -255,7 +291,11 @@
   }
   function decodeState(str) {
     var parts = String(str).split('~'), a = {};
-    QUESTIONS.forEach(function (q, i) {
+    // Backward-compat: links created before the aptitude block have fewer fields and
+    // no apt_* slots — map those by the non-aptitude question order instead.
+    var nonApt = QUESTIONS.filter(function (q) { return q.id.indexOf('apt_') !== 0; });
+    var mapQs = (parts.length === nonApt.length) ? nonApt : QUESTIONS;
+    mapQs.forEach(function (q, i) {
       var raw = decodeURIComponent(parts[i] || '');
       a[q.id] = q.type === 'checkbox' ? (raw ? raw.split('+') : []) : raw;
     });
@@ -263,6 +303,7 @@
   }
   function validState(a) {
     return QUESTIONS.every(function (q) {
+      if (q.showIf && !q.showIf(a)) return true;   // inactive for this answer set → ignore
       if (q.type === 'checkbox') return true;
       return q.options.some(function (o) { return o.value === a[q.id]; });
     });
@@ -292,7 +333,17 @@
   var WEEKS_PER_MONTH = 4.345;
 
   function buildPlan(a) {
+    // Recommender: infer best-fit track from aptitude answers (behavioural model).
+    var MATCH = window.CYBERPATH_MATCH;
+    var recommendation = null;
+    if (MATCH) {
+      var ranked = MATCH.scoreTracks(a);
+      recommendation = { ranked: ranked, top: ranked[0], closeCall: MATCH.detectCloseCall(ranked) };
+    }
+
     var trackKey = a.goal === 'unsure' ? null : a.goal;
+    // "I'm not sure yet" → let the recommender pick the top-matching track for a REAL plan.
+    if (a.goal === 'unsure' && recommendation) trackKey = recommendation.top.track;
     var track = trackKey ? DATA.TRACKS[trackKey] : null;
     var hours = Number(a.hours) || 8;
     // Sub-linear: doubling weekly hours doesn't halve calendar time (fatigue, spacing).
@@ -358,7 +409,9 @@
     ladder.forEach(function (c) { var r = TIER_COST[c.tier.key] || [0, 0]; costLo += r[0]; costHi += r[1]; });
 
     return {
-      answers: a, track: track, isExplore: !track,
+      answers: a, track: track, trackKey: trackKey, isExplore: !track,
+      matched: a.goal === 'unsure' && !!track, // track was inferred, not chosen
+      recommendation: recommendation,
       phases: allPhases, totalWeeks: totalWeeks,
       months: totalWeeks / WEEKS_PER_MONTH,
       ladder: ladder, hours: hours,
@@ -451,6 +504,7 @@
         '<span class="phase__dur">' + esc(fmtDuration(p.weeks)) + '</span>' +
       '</div>' +
       '<p class="phase__focus">' + esc(def.focus) + '</p>' +
+      (opts.prevName ? '<p class="phase__prereq"><span aria-hidden="true">↳</span> Builds on: <strong>' + esc(opts.prevName) + '</strong></p>' : '') +
       '<div class="phase__grid">' +
         '<div class="phase__block"><h4>What you’ll learn</h4><ul class="phase__list">' +
           def.skills.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') +
@@ -506,6 +560,80 @@
     var items = order.filter(function (t) { return present[t]; })
       .map(function (t) { return '<li data-tier="' + t + '">' + esc(labels[t]) + '</li>'; }).join('');
     return items ? '<ul class="tier-legend" aria-label="Timeline colour key">' + items + '</ul>' : '';
+  }
+
+  // "We matched you to X" banner — shown when the track was inferred (goal = unsure).
+  function matchCallout(plan) {
+    if (!plan.matched || !plan.recommendation || !window.CYBERPATH_MATCH) return '';
+    var r = plan.recommendation, top = r.top;
+    var why = window.CYBERPATH_MATCH.explainMatch(top.track, plan.answers);
+    var html = '<div class="callout callout--match"><strong>We matched you to ' + esc(plan.track.name) +
+      ' <span class="match__pct">' + top.confidencePct + '% fit</span>.</strong> ' + esc(why);
+    if (r.closeCall && r.closeCall.close && r.ranked[1]) {
+      var second = r.ranked[1];
+      var secondName = DATA.TRACKS[second.track] ? DATA.TRACKS[second.track].name : second.track;
+      html += ' It’s close, though — your answers also fit <strong>' + esc(secondName) + '</strong> (' + second.confidencePct + '%). Worth sampling both before you commit.';
+    }
+    html += ' Not feeling it? Use <strong>Edit answers</strong> to pick a track directly.';
+    // a compact confidence bar for the top 3
+    var bars = r.ranked.slice(0, 3).map(function (x) {
+      var nm = DATA.TRACKS[x.track] ? DATA.TRACKS[x.track].short : x.track;
+      return '<li><span class="match__label">' + esc(nm) + '</span>' +
+        '<span class="match__track"><span class="match__fill" style="width:' + x.confidencePct + '%"></span></span>' +
+        '<span class="match__val">' + x.confidencePct + '%</span></li>';
+    }).join('');
+    html += '<ul class="match__bars" aria-label="Top track matches">' + bars + '</ul></div>';
+    return html;
+  }
+
+  // The path-network map: phases as tier-coloured nodes, with optional branch stubs and
+  // milestone markers injected after the phase that earns them. A visual summary of the plan.
+  function pathNetwork(plan) {
+    if (plan.isExplore) return '';
+    var MS = DATA.MILESTONES || [];
+    var seenMs = {};
+    var nodes = '';
+    plan.phases.forEach(function (p, i) {
+      var def = p.def;
+      var tierLabel = { foundation: 'Foundation', core: 'Core', specialization: 'Specialisation', certification: 'Certification', career: 'Career' }[def.tier] || def.tier;
+      var branches = (def.branches || []).map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('');
+      nodes += '<li class="pathnet__node" data-tier="' + esc(def.tier) + '">' +
+        '<span class="pathnet__dot" aria-hidden="true"></span>' +
+        '<span class="pathnet__idx">' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</span>' +
+        '<span class="pathnet__name">' + esc(def.name) + '</span>' +
+        '<span class="pathnet__tier">' + esc(tierLabel) + '</span>' +
+        (branches ? '<ul class="pathnet__branches" aria-label="Optional side-specialisations">' + branches + '</ul>' : '') +
+        '</li>';
+      // milestones anchored to this tier for this track (once each)
+      MS.forEach(function (m, mi) {
+        if (seenMs[mi]) return;
+        if ((m.track === '*' || m.track === plan.trackKey) && m.tier === def.tier) {
+          seenMs[mi] = 1;
+          nodes += '<li class="pathnet__node pathnet__node--ms" data-kind="milestone">' +
+            '<span class="pathnet__dot" aria-hidden="true"></span>' +
+            '<span class="pathnet__name"><span class="visually-hidden">Milestone: </span>🏁 ' + esc(m.name) + '</span>' +
+            '<span class="pathnet__ms-blurb">' + esc(m.blurb) + '</span>' +
+            '</li>';
+        }
+      });
+    });
+    return '<nav class="pathnet" aria-label="Path network overview"><ol class="pathnet__spine" role="list">' + nodes + '</ol></nav>';
+  }
+
+  // "Where this path can take you next" — accurate cross-track pivots.
+  function bridgesSection(plan) {
+    if (plan.isExplore || !DATA.BRIDGES) return '';
+    var list = DATA.BRIDGES[plan.trackKey];
+    if (!list || !list.length) return '';
+    var items = list.map(function (b) {
+      var t = DATA.TRACKS[b.to];
+      if (!t) return '';
+      return '<li class="bridge"><span class="bridge__to"><span aria-hidden="true">⇄</span> ' + esc(t.name) + '</span>' +
+        '<span class="bridge__why">' + esc(b.why) + '</span></li>';
+    }).join('');
+    return '<h2 style="margin-top:var(--sp-6)">Where this path can take you next</h2>' +
+      '<p class="step__help">Cybersecurity is a network, not a ladder. These are the accurate pivots from your track — the skills genuinely overlap.</p>' +
+      '<ul class="bridges">' + items + '</ul>';
   }
 
   function budgetCallout(budget) {
@@ -584,6 +712,8 @@
           '<div class="plan-meta">' + chips + '</div>' +
         '</div>' +
 
+        matchCallout(plan) +
+
         '<div class="plan-actions">' +
           '<button type="button" class="btn btn--primary" id="print-btn"><span aria-hidden="true">⭳</span> Download as PDF</button>' +
           '<button type="button" class="btn btn--ghost" id="copy-btn" aria-label="Copy a shareable link to this roadmap"><span aria-hidden="true">🔗</span> Copy link</button>' +
@@ -598,12 +728,19 @@
         budgetCallout(a.budget) +
         '<div class="callout callout--study"><strong>How to study this (' + esc(LABELS.style[a.style] || 'your way') + '):</strong> ' + esc(STYLE_TIPS[a.style] || STYLE_TIPS.balanced) + '</div>' +
 
-        '<h2 style="margin-top:var(--sp-5)">Your step-by-step plan</h2>' +
+        (plan.isExplore ? '' :
+          '<h2 style="margin-top:var(--sp-6)">Your path network</h2>' +
+          '<p class="step__help">The map of your journey — foundations feed your track, your specialisation branches into optional lanes, and 🏁 flags the milestones that prove real progress.</p>' +
+          tierLegend(plan.phases) +
+          pathNetwork(plan)) +
+
+        '<h2 style="margin-top:var(--sp-6)">Your step-by-step plan</h2>' +
         '<p class="step__help">Timeframes assume about ' + esc(LABELS.hours[a.hours] || (plan.hours + 'h/week')) + ' and adjust to your experience — roughly <strong>~' + totalHours + ' hours</strong> of study in total. Life happens: treat them as a compass, not a deadline.</p>' +
-        tierLegend(plan.phases) +
         '<div class="timeline">' +
-          plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown }); }).join('') +
+          plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, prevName: i > 0 ? plan.phases[i - 1].def.name : null }); }).join('') +
         '</div>' +
+
+        bridgesSection(plan) +
 
         ladderHtml +
 

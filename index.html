@@ -122,6 +122,9 @@
           <div class="progress__bar" id="progress-bar"></div>
         </div>
 
+        <!-- Live recommender readout: updates as the aptitude questions are answered. -->
+        <p class="wizard__lean" id="wizard-lean" role="status" aria-live="polite" hidden></p>
+
         <form id="quiz-form" novalidate>
           <div id="steps"><!-- fieldsets injected by app.js --></div>
 
@@ -214,8 +217,9 @@
   <!-- Print-only watermark; repeats on every page of the downloaded PDF. -->
   <div class="print-watermark" aria-hidden="true"><span>CYBERPATH<small>tryhackme.com/p/oph</small></span></div>
 
-  <!-- defer keeps execution order (data.js → app.js) while freeing the main thread. -->
+  <!-- defer keeps execution order (data.js → match.js → app.js) while freeing the main thread. -->
   <script defer src="assets/js/data.js"></script>
+  <script defer src="assets/js/match.js"></script>
   <script defer src="assets/js/app.js"></script>
 </body>
 </html>

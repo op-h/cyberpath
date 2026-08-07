@@ -19,8 +19,10 @@
   a { color: inherit; }
   ul { list-style: none; padding: 0; }
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* Programmatic focus targets (step legend, plan heading) get a visible ring too. */
-  .step__legend:focus, #result-heading:focus { outline: 3px solid var(--focus); outline-offset: 4px; }
+  /* These are focused only programmatically (tabindex="-1", not keyboard-tabbable) to
+     move screen-reader position — so they need NO visible ring. Suppressing it avoids
+     an ugly box drawn around the plan title / step legend after Generate. */
+  .step__legend:focus, #result-heading:focus { outline: none; }
 }
 
 /* ---------- TOKENS ---------- */
@@ -128,7 +130,7 @@
     color: var(--text);
     background:
       radial-gradient(1200px 600px at 85% -10%, var(--accent-soft), transparent 60%),
-      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 100% 44px,
+      radial-gradient(var(--bg-grid) 1px, transparent 1.5px) 0 0 / 32px 32px,
       var(--bg);
     background-attachment: fixed, fixed, fixed;
   }
@@ -233,6 +235,8 @@
     padding-block: var(--section-space);
   }
   .hero__inner { max-width: 640px; }
+  .hero > * { min-width: 0; }          /* grid children may shrink; terminal <pre> can't widen the page */
+  .hero__lede { overflow-wrap: anywhere; }
   .hero__eyebrow {
     font-family: var(--font-mono); font-size: var(--step--1);
     color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: var(--sp-3);
@@ -282,6 +286,15 @@
   }
   .wizard__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
   .wizard__heading { font-size: var(--step-2); }
+  .wizard__lean {
+    margin-top: var(--sp-3); font-family: var(--font-mono); font-size: var(--step--1);
+    color: var(--muted); border: 1px dashed var(--border-strong); border-radius: 999px;
+    padding: .45rem .85rem; display: inline-flex; gap: .5rem; align-items: center;
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+  }
+  .wizard__lean strong { color: var(--accent); }
+  .wizard__lean-pct { color: var(--accent-2); }
+  .wizard__lean-k::before { content: "◆ "; color: var(--accent); }
   .wizard__progress-text { font-family: var(--font-mono); color: var(--muted); font-size: var(--step--1); }
   .progress { height: 8px; border-radius: 999px; background: var(--surface-3); margin: var(--sp-3) 0 var(--sp-5); overflow: hidden; }
   .progress__bar { height: 100%; width: 16%; background: var(--grad); border-radius: inherit; transition: width var(--transition); }
@@ -332,13 +345,13 @@
 
   .plan-summary {
     display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    margin-bottom: var(--sp-5);
+    margin-bottom: var(--sp-5); container-type: inline-size;   /* size the lead number to the tile, not the viewport */
   }
   .stat {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: var(--sp-4);
   }
-  .stat__num { font-family: var(--font-mono); font-size: var(--step-2); color: var(--accent); font-weight: 800; }
+  .stat__num { font-family: var(--font-mono); font-size: var(--step-2); color: var(--accent); font-weight: 800; overflow-wrap: normal; }
   .stat__label { color: var(--muted); font-size: var(--step--1); margin-top: .2rem; }
 
   /* Timeline of phases — a real roadmap: a spine with tier-coloured nodes. */
@@ -372,7 +385,8 @@
   .phase__list li::before { content: "▹"; color: var(--accent); flex: 0 0 auto; }
   .res-list li { padding: .25rem 0; }
   .res-list a { font-weight: 600; }
-  .res-list .res-note { color: var(--muted); font-size: var(--step--1); display: block; }
+  .res-list li { flex-wrap: wrap; }
+  .res-list .res-note { color: var(--muted); font-size: var(--step--1); flex-basis: 100%; padding-inline-start: 1rem; margin-top: .1rem; }
 
   /* Certification badges */
   .certs-box { margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px dashed var(--border-strong); }
@@ -429,8 +443,11 @@
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
   .step-enter { animation: fade-up 320ms cubic-bezier(.2,.7,.3,1); }
-  .phase { animation: fade-up 380ms cubic-bezier(.2,.7,.3,1) backwards; }
+  /* Phases animate TRANSFORM ONLY (never opacity) so content is never invisible —
+     even mid-animation, off-screen render, or if the animation never plays. */
+  .phase { animation: phase-rise 380ms cubic-bezier(.2,.7,.3,1) backwards; }
   @keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes phase-rise { from { transform: translateY(12px); } to { transform: none; } }
   /* Staggered reveal so the roadmap builds like a path, not a pop. */
   .timeline .phase:nth-child(1) { animation-delay: 40ms; }
   .timeline .phase:nth-child(2) { animation-delay: 100ms; }
@@ -460,7 +477,7 @@
   .stat:hover { border-color: var(--border-strong); }
   .plan-summary > .stat--lead { grid-column: span 2; }
   .plan-summary > .stat--lead::before { opacity: .9; height: 3px; }
-  .plan-summary > .stat--lead .stat__num { font-size: var(--step-3); }
+  .plan-summary > .stat--lead .stat__num { font-size: clamp(1.7rem, 8cqi, 2.4rem); line-height: 1.05; text-wrap: balance; }
   @media (max-width: 460px) { .plan-summary > .stat--lead { grid-column: auto; } }
 
   /* Timeline colour key. */
@@ -524,6 +541,51 @@
   .chip[data-k="Budget"] strong { color: var(--tier-mid); }
   .chip[data-k="Goal"] strong { color: var(--accent-2); }
   .chip[data-k="Target"] strong { color: var(--warn); }
+}
+
+/* ---------- RECOMMENDER + PATH NETWORK ---------- */
+@layer components {
+  /* "We matched you to X" banner + confidence bars */
+  .callout--match { border-inline-start-color: var(--accent); background: color-mix(in oklab, var(--accent) 10%, transparent); }
+  .callout--match::before { content: "★"; color: var(--accent); font-style: normal; }
+  .match__pct { color: var(--accent); font-family: var(--font-mono); }
+  .match__bars { list-style: none; margin: var(--sp-3) 0 0; padding: 0; display: grid; gap: .4rem; max-width: 380px; }
+  .match__bars li { display: grid; grid-template-columns: 5.5rem 1fr 2.6rem; align-items: center; gap: .5rem; font-size: var(--step--1); font-family: var(--font-mono); }
+  .match__track { height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+  .match__fill { display: block; height: 100%; background: var(--grad); }
+  .match__val { text-align: end; color: var(--muted); }
+
+  /* "Builds on" prerequisite line in each phase */
+  .phase__prereq { color: var(--muted); font-size: var(--step--1); margin: calc(-1 * var(--sp-2)) 0 var(--sp-3); }
+  .phase__prereq span { color: var(--accent-2); }
+
+  /* Path-network map: a rail with tier-coloured nodes, branch stubs and milestones */
+  .pathnet { margin-block: var(--sp-4) var(--sp-5); padding: var(--sp-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .pathnet__spine { list-style: none; margin: 0; padding-inline-start: 26px; display: grid; gap: var(--sp-3); position: relative; }
+  .pathnet__spine::before { content: ""; position: absolute; inset-block: 8px; inset-inline-start: 8px; width: 2px; background: linear-gradient(var(--accent-2), var(--ok)); opacity: .5; }
+  .pathnet__node { position: relative; display: grid; gap: .2rem; min-width: 0; }
+  .pathnet__node[data-tier="foundation"] { --node: var(--accent-2); }
+  .pathnet__node[data-tier="core"] { --node: var(--accent); }
+  .pathnet__node[data-tier="specialization"] { --node: color-mix(in oklab, var(--accent) 45%, var(--accent-2)); }
+  .pathnet__node[data-tier="certification"] { --node: var(--warn); }
+  .pathnet__node[data-tier="career"] { --node: var(--ok); }
+  .pathnet__node--ms { --node: var(--ok); }
+  .pathnet__dot { position: absolute; inset-inline-start: -26px; inset-block-start: .2em; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 3px solid var(--node); box-shadow: 0 0 0 4px var(--bg); }
+  .pathnet__node--ms .pathnet__dot { border-radius: 3px; transform: rotate(45deg); }
+  .pathnet__idx { font: 700 var(--step--1)/1 var(--font-mono); color: var(--faint); }
+  .pathnet__name { font-weight: 700; overflow-wrap: anywhere; }
+  .pathnet__tier { justify-self: start; font: 700 .68rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--node); padding: .15rem .5rem; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--node) 45%, transparent); background: color-mix(in oklab, var(--node) 12%, transparent); margin-top: .15rem; }
+  .pathnet__branches { display: flex; flex-wrap: wrap; gap: .4rem; margin: .3rem 0 0; padding: 0; list-style: none; }
+  .pathnet__branches li { font: 600 var(--step--1)/1 var(--font-mono); color: var(--muted); padding: .25rem .55rem; border-radius: 999px; border: 1px dashed color-mix(in oklab, var(--node) 55%, var(--border-strong)); background: color-mix(in oklab, var(--node) 8%, transparent); }
+  .pathnet__branches li::before { content: "↳ "; color: var(--node); }
+  .pathnet__ms-blurb { color: var(--muted); font-size: var(--step--1); }
+
+  /* Cross-track bridges */
+  .bridges { display: grid; gap: var(--sp-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); margin-top: var(--sp-3); }
+  .bridge { background: var(--surface); border: 1px solid var(--border-strong); border-inline-start: 3px solid var(--accent-2); border-radius: var(--radius); padding: var(--sp-3) var(--sp-4); }
+  .bridge__to { display: block; font-weight: 700; font-family: var(--font-mono); }
+  .bridge__to span { color: var(--accent-2); }
+  .bridge__why { display: block; color: var(--muted); font-size: var(--step--1); margin-top: .25rem; }
 }
 
 /* ---------- PRINT (this is the "download as PDF" path) ---------- */
@@ -591,6 +653,17 @@
     .certs-box { margin-top: 5pt; padding-top: 5pt; }
     .cert { padding: 4pt 7pt; }
     .cert-list { gap: 4pt; }
+
+    /* Path network + bridges: readable, unsplit, no decorative rails. */
+    .pathnet { background: #fff; border: 1px solid #ccc; padding: 8pt; break-inside: avoid; }
+    .pathnet__spine { padding-inline-start: 0; }
+    .pathnet__spine::before, .pathnet__dot { display: none !important; }
+    .pathnet__node { break-inside: avoid; page-break-inside: avoid; }
+    .pathnet__tier, .pathnet__branches li { border: 1px solid #999; background: #fff; color: #000; }
+    .bridges { break-inside: avoid; }
+    .bridge { break-inside: avoid; }
+    .match__bars { display: none !important; }   /* decorative bars add nothing to print */
+    .callout--match { break-inside: avoid; }
 
     /* Watermark — repeats on every printed page (fixed elements paint per page). */
     .print-watermark {
