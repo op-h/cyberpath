@@ -114,6 +114,7 @@ const TRACKS = {
   offensive: {
     name: 'Offensive Security / Penetration Testing',
     short: 'Offensive',
+    demand: 'Very high', community: { name: 'r/netsec', url: 'https://www.reddit.com/r/netsec/' },
     tagline: 'Break in ethically. Find the holes before attackers do.',
     roles: ['Penetration Tester', 'Red Teamer', 'Bug Bounty Hunter', 'Security Consultant'],
     phases: [
@@ -189,6 +190,7 @@ const TRACKS = {
   defensive: {
     name: 'Defensive Security / Blue Team',
     short: 'Blue Team',
+    demand: 'Very high', community: { name: 'r/blueteamsec', url: 'https://www.reddit.com/r/blueteamsec/' },
     tagline: 'Detect, respond, and hunt. Be the reason the attack fails.',
     roles: ['SOC Analyst', 'Incident Responder', 'Threat Hunter', 'Detection Engineer'],
     phases: [
@@ -260,6 +262,7 @@ const TRACKS = {
   grc: {
     name: 'Governance, Risk & Compliance (GRC)',
     short: 'GRC',
+    demand: 'High', community: { name: 'ISACA community', url: 'https://engage.isaca.org/' },
     tagline: 'Security as a business function: policy, risk, audit and frameworks.',
     roles: ['Security Analyst (GRC)', 'IT Auditor', 'Risk Analyst', 'Compliance Manager'],
     phases: [
@@ -330,6 +333,7 @@ const TRACKS = {
   cloud: {
     name: 'Cloud Security',
     short: 'Cloud',
+    demand: 'Very high', community: { name: 'Cloud Security Alliance', url: 'https://cloudsecurityalliance.org/' },
     tagline: 'Secure the platforms everything now runs on: AWS, Azure and GCP.',
     roles: ['Cloud Security Engineer', 'Cloud Security Analyst', 'DevSecOps Engineer'],
     phases: [
@@ -401,6 +405,7 @@ const TRACKS = {
   appsec: {
     name: 'Application Security / DevSecOps',
     short: 'AppSec',
+    demand: 'High', community: { name: 'OWASP community', url: 'https://owasp.org/community/' },
     tagline: 'Secure the code and the pipeline. Where developers meet security.',
     roles: ['Application Security Engineer', 'DevSecOps Engineer', 'Bug Bounty Hunter'],
     phases: [
@@ -470,6 +475,7 @@ const TRACKS = {
   dfir: {
     name: 'Digital Forensics & Incident Response (DFIR)',
     short: 'DFIR',
+    demand: 'High', community: { name: 'r/computerforensics', url: 'https://www.reddit.com/r/computerforensics/' },
     tagline: 'Follow the evidence. Reconstruct the attack, disk by disk, log by log.',
     roles: ['Digital Forensics Analyst', 'Incident Responder', 'Malware Analyst'],
     phases: [
@@ -763,5 +769,27 @@ const MILESTONES = [
   { track: '*', tier: 'career', name: 'First write-up published', blurb: 'A public post that proves how you think, not just what you did.' },
 ];
 
+/* Shared "community & getting hired" links (stable, well-known destinations). */
+const HIRING = {
+  salaryNote: 'Salaries vary widely by country, city and seniority — check a live source for your area rather than trusting a single number.',
+  salarySource: { name: 'levels.fyi / Glassdoor / local boards', url: 'https://www.levels.fyi/' },
+  communities: [
+    { name: 'r/cybersecurity', url: 'https://www.reddit.com/r/cybersecurity/' },
+    { name: 'Simply Cyber community', url: 'https://www.simplycyber.io/' },
+  ],
+  jobBoards: [
+    { name: 'infosec-jobs.com', url: 'https://infosec-jobs.com/' },
+    { name: 'CyberSecJobs', url: 'https://www.cybersecjobs.com/' },
+    { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/' },
+  ],
+  interview: [
+    { name: 'PayloadsAllTheThings', url: 'https://github.com/swisskyrepo/PayloadsAllTheThings' },
+    { name: 'Offensive-interview questions', url: 'https://github.com/WebBreacher/offensiveinterview' },
+  ],
+};
+
+/* When the content was last human-reviewed (shown in the footer as a freshness signal). */
+const LAST_REVIEWED = '2026-08';
+
 /* Expose to app.js (plain globals — no bundler, keeps GitHub Pages trivial). */
-window.CYBERPATH_DATA = { TIER, FOUNDATIONS, TRACKS, EXPLORE_PHASE, QUESTIONS, BRIDGES, MILESTONES };
+window.CYBERPATH_DATA = { TIER, FOUNDATIONS, TRACKS, EXPLORE_PHASE, QUESTIONS, BRIDGES, MILESTONES, HIRING, LAST_REVIEWED };

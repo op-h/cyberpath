@@ -10,6 +10,8 @@
   <meta name="color-scheme" content="dark light">
   <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/img/icon-192.png">
   <!-- GitHub Pages can't set response headers, so the CSP ships as a meta tag.
        style-src allows inline because the app sets a few style="" attributes at runtime. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'none'">
@@ -23,7 +25,12 @@
   <meta property="og:title" content="CYBERPATH — Build your cybersecurity learning roadmap">
   <meta property="og:description" content="A personalised, downloadable roadmap into cybersecurity: phases, timeframes, certifications and free-or-paid resources.">
   <meta property="og:url" content="https://op-h.github.io/cyberpath/">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://op-h.github.io/cyberpath/assets/og/cyberpath-og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="CYBERPATH — build your cybersecurity learning roadmap">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://op-h.github.io/cyberpath/assets/og/cyberpath-og.png">
 
   <!-- Inline SVG favicon: shield + terminal prompt, no extra request -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Cpath d='M9 12l4 4-4 4' fill='none' stroke='%239fef00' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cline x1='16' y1='21' x2='23' y2='21' stroke='%239fef00' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
@@ -105,7 +112,7 @@
 <span class="c-dim">[*]</span> budget     = mixed
 <span class="c-ok">[+]</span> plan ready: <span class="c-acc">7 phases · ~14 months</span>
 <span class="c-ok">[+]</span> certs: eJPT → CPTS → OSCP
-<span class="c-mut">root@cyberpath</span>:<span class="c-acc">~</span>$ _</code></pre>
+<span class="c-mut">root@cyberpath</span>:<span class="c-acc">~</span>$ <span class="term__cursor" aria-hidden="true"></span></code></pre>
         </div>
       </div>
     </section>
@@ -198,13 +205,46 @@
     </section>
   </main>
 
+  <section class="faq-section" aria-labelledby="faq-h">
+    <div class="faq">
+      <h2 id="faq-h">Frequently asked questions</h2>
+      <details class="faq__item"><summary>Do I need a degree to get into cybersecurity?</summary>
+        <p>For most technical roles, no — hands-on skill, home-lab projects, write-ups and recognised certifications carry real weight. Some employers and regions still prefer a degree, but this planner focuses on demonstrable skills and the certs hiring managers actually search for.</p></details>
+      <details class="faq__item"><summary>Are the free resources really enough to get hired?</summary>
+        <p>To build genuine, hireable skill — yes. Platforms like TryHackMe, PortSwigger Web Security Academy, Blue Team Labs, CyberDefenders and the YouTube channels listed can take you a long way for free. Certifications are usually where money goes, and even then one well-chosen cert often suffices for a first role.</p></details>
+      <details class="faq__item"><summary>How current is the certification information?</summary>
+        <p>Certification names and paths are reviewed periodically — see the “content reviewed” date in the footer. Exam prices and free-program availability change frequently, so cost is shown as a rough tier ($ / $$ / $$$) and you should always confirm the current price on the provider’s official site before paying.</p></details>
+      <details class="faq__item"><summary>How long will it actually take me?</summary>
+        <p>It depends on your weekly hours and where you’re starting from. The planner scales every phase to your real availability and gives a realistic range plus a total study-hours estimate. Treat the timeline as a compass, not a deadline.</p></details>
+      <details class="faq__item"><summary>Is CYBERPATH affiliated with Hack The Box, TryHackMe or INE?</summary>
+        <p>No. CYBERPATH is an independent, free planner. It links to those platforms (and many others) purely as learning resources; it isn’t sponsored by or affiliated with any of them.</p></details>
+      <details class="faq__item"><summary>Do you collect my data?</summary>
+        <p>No. There’s no tracking, no account and no server. Your answers stay in your browser (and inside the share link, if you choose to copy one). Your phase progress is saved only on your own device.</p></details>
+    </div>
+  </section>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Do I need a degree to get into cybersecurity?", "acceptedAnswer": { "@type": "Answer", "text": "For most technical roles, no — hands-on skill, home-lab projects, write-ups and recognised certifications carry real weight. Some employers and regions still prefer a degree, but skills and certs matter most." } },
+      { "@type": "Question", "name": "Are the free resources really enough to get hired?", "acceptedAnswer": { "@type": "Answer", "text": "To build genuine, hireable skill, yes. Free platforms like TryHackMe, PortSwigger, Blue Team Labs and CyberDefenders go a long way; certifications are usually the main cost and one well-chosen cert often suffices for a first role." } },
+      { "@type": "Question", "name": "How current is the certification information?", "acceptedAnswer": { "@type": "Answer", "text": "Cert names and paths are reviewed periodically (see the content-reviewed date in the footer). Prices change often, so cost is shown as a rough tier and you should verify the current price on the provider's site before paying." } },
+      { "@type": "Question", "name": "How long will it actually take me?", "acceptedAnswer": { "@type": "Answer", "text": "It depends on your weekly hours and starting point. The planner scales each phase to your availability and gives a realistic range plus a total study-hours estimate." } },
+      { "@type": "Question", "name": "Is CYBERPATH affiliated with Hack The Box, TryHackMe or INE?", "acceptedAnswer": { "@type": "Answer", "text": "No. CYBERPATH is an independent, free planner that links to those platforms as learning resources; it is not sponsored by or affiliated with any of them." } },
+      { "@type": "Question", "name": "Do you collect my data?", "acceptedAnswer": { "@type": "Answer", "text": "No. There is no tracking, no account and no server. Your answers stay in your browser and in the share link if you copy one; phase progress is saved only on your device." } }
+    ]
+  }
+  </script>
+
   <footer class="site-footer">
     <p>
       <strong>CYBERPATH</strong> — a free, open roadmap builder.
       Certification costs and program availability change; always verify on the
       provider’s site before paying. Only ever test systems you are authorised to test.
     </p>
-    <p class="site-footer__meta">Built as a static site · works offline · no tracking · no account.</p>
+    <p class="site-footer__meta">Built as a static site · works offline · no tracking · no account · content reviewed <span id="last-reviewed">2026-08</span>.</p>
     <p class="credit">
       <span class="credit__by">Designed by</span>
       <a class="credit__link" href="https://tryhackme.com/p/oph" target="_blank" rel="noopener noreferrer">

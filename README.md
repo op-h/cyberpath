@@ -26,11 +26,22 @@ The output is a phase-by-phase timeline with per-phase durations, skills, resour
 target certifications, plus a numbered **certification ladder**, a rough **exam-fee estimate**,
 a **total study-time** figure and a deadline reality-check. Actions on the plan:
 
-- **Download as PDF** — a dedicated print stylesheet, no libraries, works in every browser.
-- **Copy link** — encodes your answers in the URL so the exact plan is bookmarkable/shareable;
-  opening that link restores the plan directly.
-- **Edit answers** — reopens the questionnaire with your answers preserved so you can tweak.
-- **Start over** — clears everything and returns to the start.
+- **Smart track match** — choose "I'm not sure yet" and a transparent, on-device recommender
+  infers your best-fit track from a few aptitude questions (confidence bars + a plain-English
+  reason + a live "leaning toward…" readout as you answer).
+- **Path-network map** — tier-coloured nodes, milestones, optional branch specialisations and
+  "builds on" prerequisites, plus accurate cross-track bridges ("where this can take you next").
+- **Progress tracking** — tick phases off; a completion bar and your checkmarks are saved on
+  your device, and your last plan is restored on your next visit.
+- **Download as PDF** — a dedicated print stylesheet (watermark, no split sections), no libraries.
+- **Export as Markdown** — a `.md` of the whole plan for your notes or a GitHub repo.
+- **Copy link** — encodes your answers in a versioned URL so the exact plan is shareable; opening
+  the link restores it (old links stay compatible).
+- **Regenerate with tweaks** — change time / budget / goal in place and the plan updates instantly.
+- **Edit answers / Start over** — reopen the wizard preserving answers, or reset.
+- **Community & getting hired** — communities, job boards, interview prep and demand per track.
+- **Installable & offline** — a service worker + web manifest make it a real PWA.
+- **FAQ + rich metadata** — an FAQ (with schema), Open Graph social image, and a content-reviewed date.
 
 ## Run locally
 

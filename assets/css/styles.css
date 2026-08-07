@@ -111,7 +111,7 @@
       --bg: #f6f8fa; --bg-grid: rgba(46,125,50,.05);
       --surface: #ffffff; --surface-2: #f0f3f6; --surface-3: #e7edf3;
       --border: #d6dee6; --border-strong: #c2ccd6;
-      --text: #10161d; --muted: #56616c; --faint: #6b7681;
+      --text: #10161d; --muted: #56616c; --faint: #5a636f;
       --accent: #3f7d00; --accent-ink: #ffffff; --accent-soft: rgba(63,125,0,.12);
       --accent-2: #0b62d6; --accent-2-soft: rgba(11,98,214,.1);
       --ok: #1a7f37; --warn: #9a6700; --focus: #0b62d6;
@@ -420,6 +420,7 @@
 
   /* Static reference / no-JS */
   .static-ref { padding-block: var(--section-space); }
+  .faq-section { padding-block: var(--section-space); }
   .static-note { color: var(--muted); font-size: var(--step--1); margin-bottom: var(--sp-4); font-family: var(--font-mono); }
   .static-grid { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-top: var(--sp-4); }
   .static-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-4); }
@@ -456,6 +457,23 @@
   .timeline .phase:nth-child(5) { animation-delay: 280ms; }
   .timeline .phase:nth-child(n+6) { animation-delay: 340ms; }
   .option:hover { transform: translateY(-1px); }
+
+  /* Plan reveal choreography (PRISM #3) — safe: resting state is fully visible. */
+  .result:not([hidden]) .plan-head { animation: plan-rise 460ms cubic-bezier(.2,.7,.3,1) backwards; }
+  .result:not([hidden]) .callout--match { animation: plan-rise 460ms cubic-bezier(.2,.7,.3,1) 80ms backwards; }
+  @keyframes plan-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* Confidence bars grow in; transform-only so text is never hidden (PRISM #1). */
+  .callout--match .match__fill { animation: match-grow 620ms cubic-bezier(.2,.7,.3,1) backwards; }
+  .match__bars li:nth-child(2) .match__fill { animation-delay: 90ms; }
+  .match__bars li:nth-child(3) .match__fill { animation-delay: 170ms; }
+  @keyframes match-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* Blinking terminal caret (PRISM #4) + primary CTA arrow nudge (PRISM #5). */
+  .term__cursor { animation: term-blink 1.1s steps(1) infinite; }
+  @keyframes term-blink { 50% { opacity: 0; } }
+  .btn--primary span[aria-hidden] { transition: transform var(--transition); }
+  .btn--primary:hover span[aria-hidden] { transform: translateX(3px); }
 }
 
 /* ---------- SECOND-PASS POLISH (MUSE × PRISM) ---------- */
@@ -588,6 +606,84 @@
   .bridge__why { display: block; color: var(--muted); font-size: var(--step--1); margin-top: .25rem; }
 }
 
+/* ---------- v3: progress, tweaks, hiring, FAQ, polish, mobile ---------- */
+@layer components {
+  /* Per-phase completion + progress bar */
+  .phase__meta { display: flex; flex-direction: column; align-items: flex-end; gap: .4rem; }
+  .phase__check-label { display: inline-flex; align-items: center; gap: .4rem; font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); cursor: pointer; min-height: 32px; }
+  .phase__check { width: 20px; height: 20px; accent-color: var(--accent); }
+  .phase:has(.phase__check:checked) { border-color: color-mix(in oklab, var(--ok) 45%, var(--border)); }
+  .phase:has(.phase__check:checked) .phase__name { text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--ok) 60%, transparent); }
+  .plan-progress { margin: 0 0 var(--sp-5); }
+  .plan-progress__track { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+  .plan-progress__fill { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--ok)); transition: width var(--transition); }
+  .plan-progress__text { margin-top: .5rem; color: var(--muted); font-size: var(--step--1); font-family: var(--font-mono); }
+
+  /* Regenerate-with-tweaks toolbar */
+  .tweaks { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin: 0 0 var(--sp-5); padding: var(--sp-3) var(--sp-4); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); }
+  .tweaks__lead { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); }
+  .tweak { display: inline-flex; align-items: center; gap: .5rem; }
+  .tweak__k { font-size: var(--step--1); color: var(--muted); }
+  .tweak select { min-height: 40px; padding: .35rem .6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-family: var(--font-mono); }
+  .tweak select:hover { border-color: var(--accent); }
+
+  /* Community & getting hired */
+  .hiring { display: grid; gap: var(--sp-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); margin-top: var(--sp-3); }
+  .hiring__col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-3) var(--sp-4); }
+  .hiring__col h4 { font-size: var(--step--1); text-transform: uppercase; letter-spacing: .05em; color: var(--faint); margin-bottom: var(--sp-2); }
+
+  /* FAQ (details/summary) */
+  .faq { max-width: var(--maxw); margin: var(--sp-6) auto 0; }
+  .faq__item { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); margin-top: var(--sp-2); overflow: hidden; }
+  .faq__item summary { cursor: pointer; padding: var(--sp-3) var(--sp-4); font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: var(--sp-3); align-items: center; min-height: 44px; }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__item summary::after { content: "+"; color: var(--accent); font-family: var(--font-mono); font-size: 1.3em; }
+  .faq__item[open] summary::after { content: "−"; }
+  .faq__item summary:hover { color: var(--accent); }
+  .faq__item p { padding: 0 var(--sp-4) var(--sp-4); color: var(--muted); }
+
+  /* Match banner: style the label column, crown the winner (PRISM #1). */
+  .match__bars { min-width: 0; }
+  .match__label { color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .match__bars li:first-child .match__label { color: var(--text); font-weight: 700; }
+  .match__bars li:first-child .match__val { color: var(--accent); font-weight: 700; }
+  .match__fill { transform-origin: left center; box-shadow: 0 0 8px -2px color-mix(in oklab, var(--accent) 70%, transparent); }
+  .match__bars li:not(:first-child) .match__fill { background: color-mix(in oklab, var(--accent-2) 55%, var(--surface-3)); box-shadow: none; }
+
+  /* Section headers/dividers in the generated plan (PRISM #2). */
+  .result__inner > h2 { display: flex; align-items: center; gap: var(--sp-3); padding-top: var(--sp-4); border-top: 1px solid var(--border); }
+  .result__inner > h2::before { content: ""; flex: 0 0 auto; width: .5rem; height: 1.05em; border-radius: 3px; background: var(--grad); }
+
+  /* Pathnet node hover (PRISM #6). */
+  .pathnet__node { transition: transform var(--transition); }
+  .pathnet__node:hover { transform: translateX(2px); }
+  .pathnet__dot { transition: box-shadow var(--transition); }
+  .pathnet__node:hover .pathnet__dot { box-shadow: 0 0 0 4px var(--bg), 0 0 10px -1px var(--node); }
+
+  /* Terminal caret (PRISM #4). */
+  .term__cursor { display: inline-block; width: .55ch; height: 1.05em; vertical-align: text-bottom; background: var(--accent); border-radius: 1px; }
+
+  /* Light-theme specialisation chip contrast (PRISM B2). */
+  :root[data-theme="light"] .pathnet__node[data-tier="specialization"] .pathnet__tier { color: color-mix(in oklab, var(--node) 65%, var(--text)); }
+}
+
+/* Mobile experience polish */
+@media (max-width: 640px) {
+  .tweak select, .option input { font-size: 16px; }         /* stop iOS zoom-on-focus */
+  .plan-actions .btn { flex: 1 1 auto; justify-content: center; }  /* full-width, easy-tap actions */
+  .wizard__nav .btn { flex: 1 1 auto; justify-content: center; }
+  .tweaks { flex-direction: column; align-items: stretch; }
+  .tweak { justify-content: space-between; }
+  .tweak select { flex: 1 1 auto; }
+  .phase__top { flex-direction: column; }
+  .phase__meta { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; }
+  .hero__terminal { display: none; }                        /* free vertical space; it's decorative */
+  .match__bars li { grid-template-columns: 4.5rem 1fr 2.4rem; }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: no-preference) {
+  .option:hover { transform: none; }                        /* no hover-lift jitter on touch */
+}
+
 /* ---------- PRINT (this is the "download as PDF" path) ---------- */
 @layer print {
   @media print {
@@ -603,7 +699,7 @@
             --accent:#1a5c00; --accent-2:#0b3ea8; --accent-soft:#eef7e0; --grad:#1a5c00; }
     body { background: #fff !important; color: #000; font-size: 11pt; }
     .site-header, .hero, .wizard, .site-footer, .static-ref, .plan-actions,
-    .skip-link, .theme-toggle, #hero { display: none !important; }
+    .skip-link, .theme-toggle, #hero, .faq-section { display: none !important; }
     .timeline::before, .phase::before, .plan-head::before,
     .cert-list--ladder::before, .tier-legend { display: none !important; }
     .cert-list--ladder > .cert::before { display: none !important; }
@@ -664,6 +760,19 @@
     .bridge { break-inside: avoid; }
     .match__bars { display: none !important; }   /* decorative bars add nothing to print */
     .callout--match { break-inside: avoid; }
+    /* Interactive-only controls never belong in the PDF. */
+    .tweaks, .phase__check-label { display: none !important; }
+    .plan-progress { break-inside: avoid; }
+    .hiring, .hiring__col { break-inside: avoid; }
+    /* Clean section headers + a branded cover line (PRISM #2/#7). */
+    .result__inner > h2 { border-top: 0; padding-top: 0; }
+    .result__inner > h2::before { display: none; }
+    .result__inner::before {
+      content: "CYBERPATH — personalised cybersecurity roadmap";
+      display: block; font-family: var(--font-mono); font-size: 8pt; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--faint);
+      border-bottom: 1px solid #ccc; padding-bottom: 4pt; margin-bottom: 8pt;
+    }
 
     /* Watermark — repeats on every printed page (fixed elements paint per page). */
     .print-watermark {

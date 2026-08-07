@@ -14,6 +14,19 @@
   var byId = function (id) { return document.getElementById(id); };
   var prefersReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
+  /* Persistence: last plan (so returning shows your roadmap) + per-phase progress. */
+  var PLAN_KEY = 'cyberpath-plan-v1';
+  var PROGRESS_KEY = 'cyberpath-progress-v1';
+  function loadJSON(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function removeKey(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function getProgress(sig) { var all = loadJSON(PROGRESS_KEY) || {}; return all[sig] || {}; }
+  function setPhaseDone(sig, id, done) {
+    var all = loadJSON(PROGRESS_KEY) || {}; all[sig] = all[sig] || {};
+    if (done) all[sig][id] = 1; else delete all[sig][id];
+    saveJSON(PROGRESS_KEY, all);
+  }
+
   /* ----------------------------------------------------------------
    * THEME
    * ---------------------------------------------------------------- */
@@ -149,6 +162,24 @@
   }
   els.start.addEventListener('click', startWizard);
 
+  // ONE delegated listener on the (persistent) result section — handles per-phase
+  // progress checkboxes and the "regenerate with tweaks" selects without accumulating.
+  els.result.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el && el.classList && el.classList.contains('phase__check')) {
+      setPhaseDone(encodeState(answers), el.getAttribute('data-phase'), el.checked);
+      updateCompletion();
+    } else if (el && el.matches && el.matches('select[data-tweak]')) {
+      var k = el.getAttribute('data-tweak');
+      if (answers[k] === el.value) return;
+      answers[k] = el.value;
+      generate(true, { keepView: true });
+      var again = els.result.querySelector('select[data-tweak="' + k + '"]');
+      if (again) again.focus();
+      setStatus('Plan updated: ' + k + ' → ' + ((LABELS[k] && LABELS[k][el.value]) || el.value) + '.');
+    }
+  });
+
   // Reopen the wizard WITHOUT clearing answers, so the learner can tweak and regenerate.
   function editAnswers() {
     QUESTIONS.forEach(function (q) {
@@ -275,24 +306,54 @@
 
   // Build + render the plan. When `pushHash` is true we also encode the answers into
   // the URL so the plan is bookmarkable/shareable.
-  function generate(pushHash) {
+  function generate(pushHash, opts) {
     var plan = buildPlan(answers);
-    renderPlan(plan);
+    renderPlan(plan, opts || {});
+    saveJSON(PLAN_KEY, answers); // remember so a return visit restores this roadmap
     if (pushHash) updateHash(answers);
   }
 
-  /* ---- Shareable state (URL hash) ---- */
+  // On a return visit (no share-link in the URL), bring the learner back to their plan.
+  function restoreLastPlan() {
+    var a = loadJSON(PLAN_KEY);
+    if (!a || !validState(a)) return false;
+    answers = a;
+    generate(false);
+    return true;
+  }
+
+  /* ---- Shareable state (URL hash) ----
+   * v2 is a versioned, KEY-based encoding (id-value tokens) so adding/reordering
+   * questions can never silently corrupt an old link. The legacy positional decoder
+   * is kept as a fallback so links from before v2 still resolve. */
+  var STATE_V = '2';
   function encodeState(a) {
-    return QUESTIONS.map(function (q) {
+    return STATE_V + '!' + QUESTIONS.map(function (q) {
       var v = a[q.id];
-      if (q.type === 'checkbox') v = (v || []).join('+');
-      return encodeURIComponent(v == null ? '' : v);
-    }).join('~');
+      if (v == null || v === '') return null;
+      if (q.type === 'checkbox') { if (!v.length) return null; v = v.join('.'); }
+      return q.id + '-' + encodeURIComponent(v);
+    }).filter(Boolean).join('~');
   }
   function decodeState(str) {
+    str = String(str);
+    var bang = str.indexOf('!');
+    if (bang > -1 && str.slice(0, bang) === STATE_V) {
+      var a = {};
+      str.slice(bang + 1).split('~').forEach(function (tok) {
+        var dash = tok.indexOf('-'); if (dash < 0) return;   // question ids contain no '-'
+        var id = tok.slice(0, dash), raw = decodeURIComponent(tok.slice(dash + 1));
+        var q = null; QUESTIONS.some(function (x) { if (x.id === id) { q = x; return true; } });
+        if (!q) return;                                       // unknown id (future version) → skip, don't corrupt
+        a[id] = q.type === 'checkbox' ? (raw ? raw.split('.') : []) : raw;
+      });
+      return a;
+    }
+    return decodeLegacy(str);
+  }
+  // Pre-v2 links: '~'-joined positional values (with a shim for the pre-aptitude layout).
+  function decodeLegacy(str) {
     var parts = String(str).split('~'), a = {};
-    // Backward-compat: links created before the aptitude block have fewer fields and
-    // no apt_* slots — map those by the non-aptitude question order instead.
     var nonApt = QUESTIONS.filter(function (q) { return q.id.indexOf('apt_') !== 0; });
     var mapQs = (parts.length === nonApt.length) ? nonApt : QUESTIONS;
     mapQs.forEach(function (q, i) {
@@ -496,12 +557,16 @@
       ? 'These exams charge a fee. Build the skills for free using the earlier phases, then treat a paid exam as an optional next step — the one no-cost credential is ISC2 CC.'
       : 'This phase is the exam itself. Prepare with the resources from earlier phases, then book a certification below.';
 
+    var done = opts.progress && opts.progress[def.id];
     return '<article class="phase" data-tier="' + esc(def.tier) + '">' +
       '<div class="phase__top">' +
         '<div><span class="phase__idx">PHASE ' + (idx + 1) + '</span> ' +
           '<span class="phase__badge">' + esc(tierLabel) + '</span>' +
           '<h3 class="phase__name">' + esc(def.name) + '</h3></div>' +
-        '<span class="phase__dur">' + esc(fmtDuration(p.weeks)) + '</span>' +
+        '<div class="phase__meta">' +
+          '<span class="phase__dur">' + esc(fmtDuration(p.weeks)) + '</span>' +
+          '<label class="phase__check-label"><input type="checkbox" class="phase__check" data-phase="' + esc(def.id) + '"' + (done ? ' checked' : '') + '> Done</label>' +
+        '</div>' +
       '</div>' +
       '<p class="phase__focus">' + esc(def.focus) + '</p>' +
       (opts.prevName ? '<p class="phase__prereq"><span aria-hidden="true">↳</span> Builds on: <strong>' + esc(opts.prevName) + '</strong></p>' : '') +
@@ -636,6 +701,24 @@
       '<ul class="bridges">' + items + '</ul>';
   }
 
+  // "Community & getting hired" — where to find your people, jobs, and interview prep.
+  function hiringSection(plan) {
+    if (plan.isExplore || !DATA.HIRING || !plan.track) return '';
+    var H = DATA.HIRING, t = plan.track;
+    var comms = (t.community ? [t.community] : []).concat(H.communities);
+    function links(arr) {
+      return arr.map(function (x) { return '<li><a href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(x.name) + NEW_TAB + '</a></li>'; }).join('');
+    }
+    return '<h2 style="margin-top:var(--sp-6)">Community &amp; getting hired</h2>' +
+      '<div class="callout"><strong>Demand: ' + esc(t.demand || 'High') + '.</strong> ' + esc(H.salaryNote) +
+        ' <a href="' + esc(H.salarySource.url) + '" target="_blank" rel="noopener noreferrer">' + esc(H.salarySource.name) + NEW_TAB + '</a></div>' +
+      '<div class="hiring">' +
+        '<div class="hiring__col"><h4>Communities</h4><ul class="phase__list res-list">' + links(comms) + '</ul></div>' +
+        '<div class="hiring__col"><h4>Job boards</h4><ul class="phase__list res-list">' + links(H.jobBoards) + '</ul></div>' +
+        '<div class="hiring__col"><h4>Interview prep</h4><ul class="phase__list res-list">' + links(H.interview) + '</ul></div>' +
+      '</div>';
+  }
+
   function budgetCallout(budget) {
     if (budget === 'free') {
       return '<div class="callout"><strong>Free path.</strong> Every phase above lists no-cost resources you can start today. ' +
@@ -648,7 +731,19 @@
     return '<div class="callout"><strong>Full path.</strong> You’ll see the strongest options including paid labs and premium certifications. Spend deliberately — free resources are still the best place to build fundamentals first.</div>';
   }
 
-  function renderPlan(plan) {
+  var TWEAKS = [{ id: 'hours', label: 'Time' }, { id: 'budget', label: 'Budget' }, { id: 'appetite', label: 'Goal' }];
+  function tweakBar(a) {
+    return '<form class="tweaks" aria-label="Adjust and regenerate"><span class="tweaks__lead">Tweak &amp; regenerate:</span>' +
+      TWEAKS.map(function (t) {
+        var opts = QUESTIONS.filter(function (q) { return q.id === t.id; })[0].options.map(function (o) {
+          return '<option value="' + esc(o.value) + '"' + (String(a[t.id]) === o.value ? ' selected' : '') + '>' + esc(LABELS[t.id][o.value] || o.value) + '</option>';
+        }).join('');
+        return '<label class="tweak"><span class="tweak__k">' + esc(t.label) + '</span><select data-tweak="' + esc(t.id) + '">' + opts + '</select></label>';
+      }).join('') + '</form>';
+  }
+
+  function renderPlan(plan, opts) {
+    opts = opts || {};
     var a = plan.answers;
     var trackName = plan.isExplore ? 'Explore & Choose Your Path' : plan.track.name;
     var tagline = plan.isExplore
@@ -664,6 +759,7 @@
       ['Goal', LABELS.appetite[a.appetite] || a.appetite],
     ];
     if (a.deadline && a.deadline !== '0') chipData.splice(3, 0, ['Target', LABELS.deadline[a.deadline] || a.deadline]);
+    if (!plan.isExplore && plan.track && plan.track.demand) chipData.push(['Demand', plan.track.demand]);
     var chips = chipData.map(function (c) {
       return '<span class="chip" data-k="' + esc(c[0]) + '">' + esc(c[0]) + ': <strong>' + esc(c[1]) + '</strong></span>';
     }).join('');
@@ -701,6 +797,7 @@
       : '';
 
     var shown = {}; // de-dup certs across phase boxes within this plan
+    var progress = getProgress(encodeState(a)); // restore per-phase completion for this plan
 
     els.result.innerHTML =
       '<div class="result__inner">' +
@@ -716,11 +813,19 @@
 
         '<div class="plan-actions">' +
           '<button type="button" class="btn btn--primary" id="print-btn"><span aria-hidden="true">⭳</span> Download as PDF</button>' +
+          '<button type="button" class="btn btn--ghost" id="md-btn"><span aria-hidden="true">↓</span> Markdown</button>' +
           '<button type="button" class="btn btn--ghost" id="copy-btn" aria-label="Copy a shareable link to this roadmap"><span aria-hidden="true">🔗</span> Copy link</button>' +
           '<button type="button" class="btn btn--ghost" id="edit-btn"><span aria-hidden="true">✎</span> Edit answers</button>' +
           '<button type="button" class="btn btn--outline" id="restart-btn"><span aria-hidden="true">↺</span> Start over</button>' +
           '<span class="visually-hidden" id="plan-status" role="status" aria-live="polite"></span>' +
         '</div>' +
+
+        '<div class="plan-progress" id="plan-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Roadmap completion">' +
+          '<div class="plan-progress__track"><span class="plan-progress__fill" id="plan-progress-fill"></span></div>' +
+          '<p class="plan-progress__text" id="plan-progress-text">Tick phases off as you finish them — your progress is saved on this device.</p>' +
+        '</div>' +
+
+        (plan.isExplore ? '' : tweakBar(a)) +
 
         '<div class="plan-summary">' + stats + '</div>' +
 
@@ -737,10 +842,12 @@
         '<h2 style="margin-top:var(--sp-6)">Your step-by-step plan</h2>' +
         '<p class="step__help">Timeframes assume about ' + esc(LABELS.hours[a.hours] || (plan.hours + 'h/week')) + ' and adjust to your experience — roughly <strong>~' + totalHours + ' hours</strong> of study in total. Life happens: treat them as a compass, not a deadline.</p>' +
         '<div class="timeline">' +
-          plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, prevName: i > 0 ? plan.phases[i - 1].def.name : null }); }).join('') +
+          plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, progress: progress, prevName: i > 0 ? plan.phases[i - 1].def.name : null }); }).join('') +
         '</div>' +
 
         bridgesSection(plan) +
+
+        hiringSection(plan) +
 
         ladderHtml +
 
@@ -750,23 +857,23 @@
         '</div>' +
       '</div>';
 
-    // reveal + move focus (preventScroll so it doesn't fight the smooth scroll-to-top)
+    // reveal; skip the scroll/focus jump on in-place tweak refreshes (keepView).
     showView('result');
-    if (!prefersReduce) window.scrollTo({ top: 0, behavior: 'smooth' }); else window.scrollTo(0, 0);
-    var heading = byId('result-heading');
-    if (heading) heading.focus({ preventScroll: true });
+    if (!opts.keepView) {
+      if (!prefersReduce) window.scrollTo({ top: 0, behavior: 'smooth' }); else window.scrollTo(0, 0);
+      var heading = byId('result-heading');
+      if (heading) heading.focus({ preventScroll: true });
+    }
 
-    wirePlanActions(trackName);
+    wirePlanActions(plan, trackName);
   }
 
   function setStatus(msg) { var s = byId('plan-status'); if (s) s.textContent = msg; }
 
-  function wirePlanActions(trackName) {
+  function wirePlanActions(planRef, trackName) {
     byId('print-btn').addEventListener('click', function () {
-      var prev = document.title;
-      document.title = 'CYBERPATH roadmap — ' + trackName;
+      wantPrintTitle = 'CYBERPATH roadmap — ' + trackName; // applied via beforeprint (deterministic)
       window.print();
-      setTimeout(function () { document.title = prev; }, 500);
     });
 
     var copyBtn = byId('copy-btn');
@@ -793,6 +900,9 @@
 
     byId('edit-btn').addEventListener('click', editAnswers);
 
+    var mdBtn = byId('md-btn');
+    if (mdBtn) mdBtn.addEventListener('click', function () { downloadMarkdown(planRef, trackName); });
+
     byId('restart-btn').addEventListener('click', function () {
       answers = {}; stepIndex = 0;
       stepEls.forEach(function (fs) {
@@ -801,10 +911,86 @@
       showStep(0, false);          // keep the wizard DOM coherent for any re-entry
       els.result.innerHTML = '';
       showView('hero');
+      removeKey(PLAN_KEY);          // don't auto-restore after an explicit reset
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
       window.scrollTo({ top: 0, behavior: prefersReduce ? 'auto' : 'smooth' });
       els.start.focus();
     });
+
+    updateCompletion(); // the change handling itself is delegated once, at init
+  }
+
+  function updateCompletion() {
+    var boxes = els.result.querySelectorAll('.phase__check');
+    if (!boxes.length) return;
+    var done = 0;
+    Array.prototype.forEach.call(boxes, function (b) { if (b.checked) done++; });
+    var total = boxes.length, pct = Math.round((done / total) * 100);
+    var fill = byId('plan-progress-fill'); if (fill) fill.style.width = pct + '%';
+    var txt = byId('plan-progress-text');
+    if (txt) txt.textContent = done + ' of ' + total + ' phases complete (' + pct + '%)';
+    var wrap = byId('plan-progress'); if (wrap) wrap.setAttribute('aria-valuenow', String(pct));
+  }
+
+  // Download the plan as a Markdown file (great for notes / a GitHub repo).
+  function downloadMarkdown(plan, trackName) {
+    var md = buildMarkdown(plan, trackName);
+    try {
+      var blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'cyberpath-' + slug(trackName) + '.md';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setStatus('Markdown file downloaded.');
+    } catch (e) { setStatus('Could not generate the Markdown file.'); }
+  }
+  function slug(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+
+  function buildMarkdown(plan, trackName) {
+    var a = plan.answers, L = LABELS, lines = [];
+    lines.push('# CYBERPATH roadmap — ' + trackName, '');
+    if (!plan.isExplore && plan.track) lines.push('> ' + plan.track.tagline, '');
+    lines.push('**Profile:** ' + (L.experience[a.experience] || a.experience) +
+      ' · ' + (L.hours[a.hours] || a.hours) + ' · ' + (L.budget[a.budget] || a.budget) +
+      ' · ' + (L.style[a.style] || a.style) + ' · goal: ' + (L.appetite[a.appetite] || a.appetite));
+    lines.push('', '**Estimate:** ~' + fmtTotal(plan.months) + ' to job-ready · ' + plan.phases.length +
+      ' phases · ~' + Math.max(10, Math.round(plan.totalWeeks * plan.hours / 10) * 10) + ' hours total', '');
+    if (plan.matched && plan.recommendation) {
+      lines.push('_Matched by aptitude: ' + plan.recommendation.top.confidencePct + '% fit._', '');
+    }
+    lines.push('## Step-by-step plan', '');
+    plan.phases.forEach(function (p, i) {
+      var d = p.def;
+      lines.push('### ' + (i + 1) + '. ' + d.name + '  _(' + fmtDuration(p.weeks) + ')_');
+      lines.push('', d.focus, '');
+      lines.push('**Learn:** ' + d.skills.join(', '), '');
+      var showPaid = a.budget !== 'free';
+      var res = (d.free || []).concat(showPaid ? (d.paid || []) : []);
+      if (res.length) {
+        lines.push('**Resources:**');
+        res.forEach(function (r) { lines.push('- [' + r.name + '](' + r.url + ')' + (r.note ? ' — ' + r.note : '')); });
+        lines.push('');
+      }
+      if (a.appetite !== 'hobby' && (d.certs || []).length) {
+        lines.push('**Target certs:** ' + d.certs.map(function (c) { return c.name + ' (' + c.tier.label + ')'; }).join(', '), '');
+      }
+    });
+    if (plan.ladder && plan.ladder.length) {
+      lines.push('## Certification ladder', '');
+      plan.ladder.forEach(function (c, i) { lines.push((i + 1) + '. ' + c.name + ' — ' + c.tier.label + ' — ' + c.url); });
+      if (a.budget !== 'free' && plan.costHi > 0) lines.push('', '_Rough exam fees: ~$' + plan.costLo + '–$' + plan.costHi + ' (verify current prices)._');
+      lines.push('');
+    }
+    if (!plan.isExplore && DATA.BRIDGES && DATA.BRIDGES[plan.trackKey]) {
+      lines.push('## Where this can take you next', '');
+      DATA.BRIDGES[plan.trackKey].forEach(function (b) {
+        var t = DATA.TRACKS[b.to]; if (t) lines.push('- **' + t.name + '** — ' + b.why);
+      });
+      lines.push('');
+    }
+    lines.push('---', '_Generated by CYBERPATH · https://op-h.github.io/cyberpath/ · Verify cert prices before paying._');
+    return lines.join('\n');
   }
 
   /* ----------------------------------------------------------------
@@ -816,8 +1002,30 @@
     });
   }
 
+  /* Deterministic PDF filename: set the title only during printing (covers Ctrl+P too). */
+  var wantPrintTitle = null, savedTitle = null;
+  window.addEventListener('beforeprint', function () {
+    if (wantPrintTitle) { savedTitle = document.title; document.title = wantPrintTitle; }
+  });
+  window.addEventListener('afterprint', function () {
+    if (savedTitle != null) { document.title = savedTitle; savedTitle = null; }
+  });
+
+  // A #plan= link pasted into an open tab (or Back/Forward across plans) re-renders.
+  window.addEventListener('hashchange', function () {
+    if ((location.hash || '').indexOf('#plan=') === 0) restoreFromHash();
+  });
+
+  // Offline / installable: register the service worker (relative path → correct scope
+  // on GitHub Pages project sites). Makes the footer's "works offline" claim true.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+
   /* ----------------------------------------------------------------
-   * BOOT — a shared "#plan=…" link lands straight on the rendered plan.
+   * BOOT — a shared "#plan=…" link wins; otherwise restore the last plan.
    * ---------------------------------------------------------------- */
-  restoreFromHash();
+  if (!restoreFromHash()) restoreLastPlan();
+
+  var lr = byId('last-reviewed'); if (lr && DATA.LAST_REVIEWED) lr.textContent = DATA.LAST_REVIEWED;
 })();
