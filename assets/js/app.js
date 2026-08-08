@@ -12,6 +12,26 @@
 
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var byId = function (id) { return document.getElementById(id); };
+
+  /* Stroke icon set (feather-style) — replaces emoji for a crafted, professional look.
+   * Monochrome, inherits currentColor, 1.75 stroke, rounded joins. */
+  var ICON_PATHS = {
+    download: '<path d="M12 4v10m0 0l-4-4m4 4l4-4"/><path d="M5 20h14"/>',
+    file: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+    link: '<path d="M10 14a4 4 0 0 0 5.66 0l2.5-2.5a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-2.5 2.5a4 4 0 0 0 5.66 5.66l1-1"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+    rotate: '<path d="M4.5 12a7.5 7.5 0 1 1 2.4 5.5"/><path d="M4 19v-5h5"/>',
+    flag: '<path d="M6 21V4"/><path d="M6 4h11l-2 3.2L17 10H6"/>',
+    target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+    moon: '<path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10l1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7"/>'
+  };
+  function icon(name) {
+    return '<svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+      (ICON_PATHS[name] || '') + '</svg>';
+  }
   var prefersReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   /* Persistence: last plan (so returning shows your roadmap) + per-phase progress. */
@@ -20,6 +40,16 @@
   function loadJSON(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   function saveJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function removeKey(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  // Progress is keyed only by answers that change WHICH phases exist (not duration/cost),
+  // so the in-result "tweak" selects (time/budget) never wipe your checkmarks (BUG-2).
+  var PROGRESS_EXCLUDE = { hours: 1, budget: 1, deadline: 1, style: 1 };
+  function progressSig(a) {
+    return QUESTIONS.filter(function (q) { return !PROGRESS_EXCLUDE[q.id]; }).map(function (q) {
+      var v = a[q.id];
+      if (q.type === 'checkbox') v = (Array.isArray(v) ? v.slice().sort() : []).join('+');
+      return v == null ? '' : v;
+    }).join('|');
+  }
   function getProgress(sig) { var all = loadJSON(PROGRESS_KEY) || {}; return all[sig] || {}; }
   function setPhaseDone(sig, id, done) {
     var all = loadJSON(PROGRESS_KEY) || {}; all[sig] = all[sig] || {};
@@ -47,7 +77,7 @@
     toggle.setAttribute('aria-pressed', String(isLight));
     toggle.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
     $('.theme-toggle__label', toggle).textContent = isLight ? 'Light' : 'Dark';
-    $('.theme-toggle__icon', toggle).textContent = isLight ? '☀' : '☾';
+    $('.theme-toggle__icon', toggle).innerHTML = isLight ? icon('sun') : icon('moon');
   }
   try {
     var saved = localStorage.getItem(THEME_KEY);
@@ -167,7 +197,7 @@
   els.result.addEventListener('change', function (e) {
     var el = e.target;
     if (el && el.classList && el.classList.contains('phase__check')) {
-      setPhaseDone(encodeState(answers), el.getAttribute('data-phase'), el.checked);
+      setPhaseDone(progressSig(answers), el.getAttribute('data-phase'), el.checked);
       updateCompletion();
     } else if (el && el.matches && el.matches('select[data-tweak]')) {
       var k = el.getAttribute('data-tweak');
@@ -319,6 +349,7 @@
     if (!a || !validState(a)) return false;
     answers = a;
     generate(false);
+    updateHash(answers); // BUG-1: so "Copy link" on a return visit shares a real #plan= URL
     return true;
   }
 
@@ -329,6 +360,7 @@
   var STATE_V = '2';
   function encodeState(a) {
     return STATE_V + '!' + QUESTIONS.map(function (q) {
+      if (q.showIf && !q.showIf(a)) return null; // don't encode inactive (e.g. stale apt_*) answers
       var v = a[q.id];
       if (v == null || v === '') return null;
       if (q.type === 'checkbox') { if (!v.length) return null; v = v.join('.'); }
@@ -363,9 +395,14 @@
     return a;
   }
   function validState(a) {
+    if (!a || typeof a !== 'object') return false;
     return QUESTIONS.every(function (q) {
       if (q.showIf && !q.showIf(a)) return true;   // inactive for this answer set → ignore
-      if (q.type === 'checkbox') return true;
+      if (q.type === 'checkbox') {                  // must be absent or an array of valid values
+        var v = a[q.id];
+        if (v == null) return true;
+        return Array.isArray(v) && v.every(function (x) { return q.options.some(function (o) { return o.value === x; }); });
+      }
       return q.options.some(function (o) { return o.value === a[q.id]; });
     });
   }
@@ -410,7 +447,7 @@
     // Sub-linear: doubling weekly hours doesn't halve calendar time (fatigue, spacing).
     // Baseline is 10h/week (factor 1); clamp the extremes so estimates stay believable.
     var hoursFactor = Math.min(2.6, Math.max(0.55, Math.pow(10 / hours, 0.8)));
-    var bg = (a.background || []).slice();
+    var bg = Array.isArray(a.background) ? a.background.slice() : []; // coerce (poisoned state safety)
     var exp = a.experience || 'none';
     // System administrators live in the shell and manage OSes, so credit them the
     // Linux foundation (otherwise the "sysadmin" answer would trim nothing).
@@ -676,7 +713,7 @@
           seenMs[mi] = 1;
           nodes += '<li class="pathnet__node pathnet__node--ms" data-kind="milestone">' +
             '<span class="pathnet__dot" aria-hidden="true"></span>' +
-            '<span class="pathnet__name"><span class="visually-hidden">Milestone: </span>🏁 ' + esc(m.name) + '</span>' +
+            '<span class="pathnet__name pathnet__name--ms"><span class="visually-hidden">Milestone: </span>' + icon('flag') + ' ' + esc(m.name) + '</span>' +
             '<span class="pathnet__ms-blurb">' + esc(m.blurb) + '</span>' +
             '</li>';
         }
@@ -797,7 +834,7 @@
       : '';
 
     var shown = {}; // de-dup certs across phase boxes within this plan
-    var progress = getProgress(encodeState(a)); // restore per-phase completion for this plan
+    var progress = getProgress(progressSig(a)); // restore per-phase completion for this plan
 
     els.result.innerHTML =
       '<div class="result__inner">' +
@@ -812,11 +849,11 @@
         matchCallout(plan) +
 
         '<div class="plan-actions">' +
-          '<button type="button" class="btn btn--primary" id="print-btn"><span aria-hidden="true">⭳</span> Download as PDF</button>' +
-          '<button type="button" class="btn btn--ghost" id="md-btn"><span aria-hidden="true">↓</span> Markdown</button>' +
-          '<button type="button" class="btn btn--ghost" id="copy-btn" aria-label="Copy a shareable link to this roadmap"><span aria-hidden="true">🔗</span> Copy link</button>' +
-          '<button type="button" class="btn btn--ghost" id="edit-btn"><span aria-hidden="true">✎</span> Edit answers</button>' +
-          '<button type="button" class="btn btn--outline" id="restart-btn"><span aria-hidden="true">↺</span> Start over</button>' +
+          '<button type="button" class="btn btn--primary" id="print-btn">' + icon('download') + ' Download as PDF</button>' +
+          '<button type="button" class="btn btn--ghost" id="md-btn">' + icon('file') + ' Markdown</button>' +
+          '<button type="button" class="btn btn--ghost" id="copy-btn" aria-label="Copy a shareable link to this roadmap">' + icon('link') + ' Copy link</button>' +
+          '<button type="button" class="btn btn--ghost" id="edit-btn">' + icon('edit') + ' Edit answers</button>' +
+          '<button type="button" class="btn btn--outline" id="restart-btn">' + icon('rotate') + ' Start over</button>' +
           '<span class="visually-hidden" id="plan-status" role="status" aria-live="polite"></span>' +
         '</div>' +
 
@@ -835,7 +872,7 @@
 
         (plan.isExplore ? '' :
           '<h2 style="margin-top:var(--sp-6)">Your path network</h2>' +
-          '<p class="step__help">The map of your journey — foundations feed your track, your specialisation branches into optional lanes, and 🏁 flags the milestones that prove real progress.</p>' +
+          '<p class="step__help">The map of your journey — foundations feed your track, your specialisation branches into optional lanes, and flag markers call out the milestones that prove real progress.</p>' +
           tierLegend(plan.phases) +
           pathNetwork(plan)) +
 
@@ -882,7 +919,7 @@
       var flash = function () {
         setStatus('Link copied to clipboard.');
         var original = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<span aria-hidden="true">✓</span> Copied!';
+        copyBtn.innerHTML = icon('check') + ' Copied!';
         setTimeout(function () { copyBtn.innerHTML = original; }, 1600);
       };
       var fallback = function () {

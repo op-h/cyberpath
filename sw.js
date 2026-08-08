@@ -4,7 +4,7 @@
  * Third-party links (TryHackMe, YouTube, …) are never intercepted — they open to
  * the live web in new tabs.
  */
-var CACHE = 'cyberpath-v3';
+var CACHE = 'cyberpath-v4';
 var ASSETS = [
   './', './index.html',
   './assets/css/styles.css',
@@ -32,8 +32,11 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(
     caches.match(req).then(function (hit) {
       return hit || fetch(req).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        // Only cache successful, same-origin ("basic") responses — never 404s/opaque.
+        if (res && res.ok && res.type === 'basic') {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        }
         return res;
       }).catch(function () {
         if (req.mode === 'navigate') return caches.match('./index.html');

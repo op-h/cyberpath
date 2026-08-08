@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="assets/img/icon-192.png">
   <!-- GitHub Pages can't set response headers, so the CSP ships as a meta tag.
        style-src allows inline because the app sets a few style="" attributes at runtime. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'none'; object-src 'none'; frame-src 'none'">
   <!-- TODO(deploy): replace the placeholder origin below with your real Pages URL. -->
   <link rel="canonical" href="https://op-h.github.io/cyberpath/">
 
@@ -62,7 +62,7 @@
       <span class="brand__name">CYBER<span class="brand__accent">PATH</span></span>
     </a>
     <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
-      <span class="theme-toggle__icon" aria-hidden="true">◐</span>
+      <span class="theme-toggle__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg></span>
       <span class="theme-toggle__label">Theme</span>
     </button>
   </header>
@@ -138,7 +138,7 @@
           <div class="wizard__nav">
             <button type="button" class="btn btn--ghost" id="back-btn" hidden><span aria-hidden="true">←</span> Back</button>
             <button type="button" class="btn btn--primary" id="next-btn">Next <span aria-hidden="true">→</span></button>
-            <button type="submit" class="btn btn--primary" id="generate-btn" hidden>Generate my plan <span aria-hidden="true">✦</span></button>
+            <button type="submit" class="btn btn--primary" id="generate-btn" hidden>Generate my plan <svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17l-1.9-5.1L4.5 10l5.6-1.4z"/></svg></button>
           </div>
           <p class="wizard__hint" id="step-error" role="alert"></p>
         </form>
