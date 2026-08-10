@@ -34,6 +34,8 @@
   }
   // Translate helper: Arabic when active, English fallback otherwise.
   function T(k, en) { var I = window.CYBERPATH_I18N; return I ? I.t(k, en) : en; }
+  // Phrase translate (content strings): Arabic via the phrase map, else the English string.
+  function tr(s) { var I = window.CYBERPATH_I18N; return I && I.tr ? I.tr(s) : s; }
   var prefersReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   /* Persistence: last plan (so returning shows your roadmap) + per-phase progress. */
@@ -120,8 +122,8 @@
       var certNames = certs.map(function (c) { return c.name; }).slice(0, 5).join(' → ');
       return '<article class="static-card"><h3>' + esc(T('trk.' + key + '.name', t.name)) + '</h3>' +
         '<p>' + esc(T('trk.' + key + '.tag', t.tagline)) + '</p>' +
-        '<p><strong>Roles:</strong> ' + esc(T('trk.' + key + '.roles', t.roles.join(', '))) + '</p>' +
-        (certNames ? '<p><strong>Certs:</strong> ' + esc(certNames) + '</p>' : '') +
+        '<p><strong>' + T('trk.roles', 'Roles') + ':</strong> ' + esc(T('trk.' + key + '.roles', t.roles.join(', '))) + '</p>' +
+        (certNames ? '<p><strong>' + T('trk.certs', 'Certs') + ':</strong> ' + esc(certNames) + '</p>' : '') +
         '</article>';
     }).join('');
 
@@ -570,22 +572,28 @@
     balanced: 'You like variety, so rotate: watch or read to understand a topic, then immediately practise it in a lab, then write a short note. That watch → do → explain loop is the most reliable way to retain security skills.',
   };
 
+  function uWeek(n) { return n === 1 ? T('unit.week', ' week') : T('unit.weeks', ' weeks'); }
+  function uMonth(n) { return n === 1 ? T('unit.month', ' month') : T('unit.months', ' months'); }
+  // In RTL a "<number> <arabic-unit>" run next to another such run reorders confusingly
+  // (the second number leaks onto the first unit). Wrap each run in an RTL isolate so the
+  // digits stay glued to their own word. No-op in LTR.
+  function iso(s) { return (document.documentElement.dir === 'rtl') ? '⁧' + s + '⁩' : s; }
   function fmtDuration(weeks) {
-    if (weeks < 4) return weeks + (weeks === 1 ? ' week' : ' weeks');
+    if (weeks < 4) return iso(weeks + uWeek(weeks));
     var mo = weeks / WEEKS_PER_MONTH;
-    var moTxt = mo < 1.5 ? '~1 month' : '~' + Math.round(mo) + ' months';
-    return weeks + ' wks · ' + moTxt;
+    var moTxt = mo < 1.5 ? '~1' + T('unit.month', ' month') : '~' + Math.round(mo) + T('unit.months', ' months');
+    return iso(weeks + T('unit.wks', ' wks')) + ' · ' + iso(moTxt);
   }
   function fmtTotal(months) {
     // Very short plans read better in weeks; guarantee a sane, non-inverted range.
     if (months < 1.4) {
       var wk = Math.max(1, Math.round(months * WEEKS_PER_MONTH));
-      return '~' + wk + (wk === 1 ? ' week' : ' weeks');
+      return iso('~' + wk + uWeek(wk));
     }
     var lo = Math.max(1, Math.round(months * 0.9));
     var hi = Math.max(lo, Math.round(months * 1.15));
-    if (lo === hi) return '~' + lo + (lo === 1 ? ' month' : ' months');
-    return lo + '–' + hi + ' months';
+    if (lo === hi) return iso('~' + lo + uMonth(lo));
+    return iso(lo + '–' + hi + T('unit.months', ' months'));
   }
 
   function fmtIQD(n) { return n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'm' : Math.round(n / 1000) + 'k'; }
@@ -595,7 +603,7 @@
   function resourceList(items) {
     return items.map(function (r) {
       return '<li><a href="' + esc(r.url) + '" target="_blank" rel="noopener noreferrer">' + esc(r.name) + NEW_TAB + '</a>' +
-        (r.note ? '<span class="res-note">' + esc(r.note) + '</span>' : '') + '</li>';
+        (r.note ? '<span class="res-note">' + esc(tr(r.note)) + '</span>' : '') + '</li>';
     }).join('');
   }
 
@@ -611,8 +619,8 @@
     return '<li class="cert">' +
       '<span class="cert__name"><a href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">' + esc(c.name) + NEW_TAB + '</a></span>' +
       (c.optional
-        ? '<span class="cert__lvl">optional</span>'
-        : (c.level ? '<span class="cert__lvl">' + esc(c.level) + '</span>' : '')) +
+        ? '<span class="cert__lvl">' + tr('optional') + '</span>'
+        : (c.level ? '<span class="cert__lvl">' + esc(tr(c.level)) + '</span>' : '')) +
       '<span class="cert__price">' + esc(T('price.' + t.key, TIER_PRICE[t.key] || '')) + '</span>' +
       '<span class="tier" data-tier="' + esc(t.key) + '" aria-label="Cost tier: ' + esc(t.label) + ' — ' + esc(t.hint) + '">' + esc(t.label) + '</span>' +
       '</li>';
@@ -648,11 +656,11 @@
           '<label class="phase__check-label"><input type="checkbox" class="phase__check" data-phase="' + esc(def.id) + '"' + (done ? ' checked' : '') + '> ' + T('ph.done','Done') + '</label>' +
         '</div>' +
       '</div>' +
-      '<p class="phase__focus">' + esc(def.focus) + '</p>' +
+      '<p class="phase__focus">' + esc(tr(def.focus)) + '</p>' +
       (opts.prevName ? '<p class="phase__prereq"><span aria-hidden="true">↳</span> ' + T('ph.builds','Builds on:') + ' <strong>' + esc(opts.prevName) + '</strong></p>' : '') +
       '<div class="phase__grid">' +
         '<div class="phase__block"><h4>' + T('ph.learn','What you’ll learn') + '</h4><ul class="phase__list">' +
-          def.skills.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') +
+          def.skills.map(function (s) { return '<li>' + esc(tr(s)) + '</li>'; }).join('') +
         '</ul></div>' +
         '<div class="phase__block"><h4>' + (showPaid ? T('ph.res','Resources') : T('ph.resFree','Free resources')) + '</h4>' +
           (resources.length
@@ -677,24 +685,23 @@
     var hi = Math.max(1, Math.round(months * 1.15));
     if (hi <= target) {
       return '<div class="callout callout--ok">' +
-        '<strong>On track.</strong> At ' + esc(String(plan.hours)) + ' hours a week, your plan lands around ' +
-        esc(fmtTotal(months)) + ' — inside your ' + target + '-month target. Keep the pace steady and you’ll make it.</div>';
+        '<strong>' + T('dl.ok.head', 'On track.') + '</strong> ' +
+        T('dl.ok.a', 'At ') + esc(String(plan.hours)) + T('dl.ok.b', ' hours a week, your plan lands around ') +
+        esc(fmtTotal(months)) + T('dl.ok.c', ' — inside your ') + target + T('dl.ok.d', '-month target. Keep the pace steady and you’ll make it.') + '</div>';
     }
     // Not enough time at current pace → compute the hours it would actually take.
     // hoursFactor is sub-linear (pow 0.8), so hours scale ~ (months/target)^1.25.
     var neededHours = Math.ceil(plan.hours * Math.pow(months / target, 1.25));
     var advice;
     if (neededHours <= 40) {
-      advice = 'To hit ' + target + ' months you’d need roughly <strong>' + neededHours + ' hours a week</strong>. ' +
-        'If that’s not realistic, either extend your target or narrow the scope (e.g. aim for one entry certification first).';
+      advice = T('dl.a1.a', 'To hit ') + target + T('dl.a1.b', ' months you’d need roughly ') + '<strong>' + neededHours + T('dl.a1.c', ' hours a week') + '</strong>' + T('dl.a1.d', '. If that’s not realistic, either extend your target or narrow the scope (e.g. aim for one entry certification first).');
     } else {
-      advice = 'Reaching ' + target + ' months from here would take an unrealistic ~' + neededHours + ' hours a week. ' +
-        'A ' + target + '-month goal is very ambitious for your starting point — consider extending to ' + hi +
-        ' months, or focus on a single entry-level certification and role first.';
+      advice = T('dl.a2.a', 'Reaching ') + target + T('dl.a2.b', ' months from here would take an unrealistic ~') + neededHours + T('dl.a2.c', ' hours a week. A ') + target + T('dl.a2.d', '-month goal is very ambitious for your starting point — consider extending to ') + hi + T('dl.a2.e', ' months, or focus on a single entry-level certification and role first.');
     }
     return '<div class="callout callout--warn">' +
-      '<strong>Heads-up on your deadline.</strong> Your plan estimates about ' + esc(fmtTotal(months)) +
-      ' at ' + esc(String(plan.hours)) + ' h/week, which is longer than your ' + target + '-month target. ' + advice + '</div>';
+      '<strong>' + T('dl.warn.head', 'Heads-up on your deadline.') + '</strong> ' +
+      T('dl.warn.a', 'Your plan estimates about ') + esc(fmtTotal(months)) +
+      T('dl.warn.b', ' at ') + esc(String(plan.hours)) + T('dl.warn.c', ' h/week, which is longer than your ') + target + T('dl.warn.d', '-month target. ') + advice + '</div>';
   }
 
   // Colour key for the timeline nodes (only the tiers actually present).
@@ -796,10 +803,10 @@
       var t = DATA.TRACKS[b.to];
       if (!t) return '';
       return '<li class="bridge"><span class="bridge__to"><span aria-hidden="true">⇄</span> ' + esc(t.name) + '</span>' +
-        '<span class="bridge__why">' + esc(b.why) + '</span></li>';
+        '<span class="bridge__why">' + esc(tr(b.why)) + '</span></li>';
     }).join('');
     return '<h2 style="margin-top:var(--sp-6)">' + T('plan.bridges','Where this path can take you next') + '</h2>' +
-      '<p class="step__help">Cybersecurity is a network, not a ladder. These are the accurate pivots from your track — the skills genuinely overlap.</p>' +
+      '<p class="step__help">' + esc(tr('Cybersecurity is a network, not a ladder. These are the accurate pivots from your track — the skills genuinely overlap.')) + '</p>' +
       '<ul class="bridges">' + items + '</ul>';
   }
 
@@ -812,7 +819,7 @@
       return arr.map(function (x) { return '<li><a href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(x.name) + NEW_TAB + '</a></li>'; }).join('');
     }
     return '<h2 style="margin-top:var(--sp-6)">' + T('plan.hiring','Community &amp; getting hired') + '</h2>' +
-      '<div class="callout"><strong>' + T('plan.demand', 'Demand') + ': ' + esc(T('demand.' + (t.demand || 'High'), t.demand || 'High')) + '.</strong> ' + esc(H.salaryNote) +
+      '<div class="callout"><strong>' + T('plan.demand', 'Demand') + ': ' + esc(T('demand.' + (t.demand || 'High'), t.demand || 'High')) + '.</strong> ' + esc(tr(H.salaryNote)) +
         ' <a href="' + esc(H.salarySource.url) + '" target="_blank" rel="noopener noreferrer">' + esc(H.salarySource.name) + NEW_TAB + '</a></div>' +
       '<div class="hiring">' +
         '<div class="hiring__col"><h4>' + T('plan.communities','Communities') + '</h4><ul class="phase__list res-list">' + links(comms) + '</ul></div>' +
@@ -842,12 +849,12 @@
     if (id === 'goal') { // list the six real tracks (no "unsure" here — Start over to re-explore)
       var cur = a.goal !== 'unsure' ? a.goal : trackKey;
       return Object.keys(DATA.TRACKS).map(function (k) {
-        return '<option value="' + esc(k) + '"' + (cur === k ? ' selected' : '') + '>' + esc(DATA.TRACKS[k].short) + '</option>';
+        return '<option value="' + esc(k) + '"' + (cur === k ? ' selected' : '') + '>' + esc(tr(DATA.TRACKS[k].short)) + '</option>';
       }).join('');
     }
     var q = QUESTIONS.filter(function (x) { return x.id === id; })[0];
     return q.options.map(function (o) {
-      return '<option value="' + esc(o.value) + '"' + (String(a[id]) === o.value ? ' selected' : '') + '>' + esc((LABELS[id] && LABELS[id][o.value]) || o.label || o.value) + '</option>';
+      return '<option value="' + esc(o.value) + '"' + (String(a[id]) === o.value ? ' selected' : '') + '>' + esc(tr((LABELS[id] && LABELS[id][o.value]) || o.label || o.value)) + '</option>';
     }).join('');
   }
   function tweakBar(a, trackKey) {
@@ -870,14 +877,14 @@
     var roles = plan.isExplore ? [] : plan.track.roles;
 
     var chipData = [
-      ['Level', LABELS.experience[a.experience] || a.experience],
-      ['Time', LABELS.hours[a.hours] || a.hours],
-      ['Budget', LABELS.budget[a.budget] || a.budget],
-      ['Style', LABELS.style[a.style] || a.style],
-      ['Goal', LABELS.appetite[a.appetite] || a.appetite],
+      ['Level', tr(LABELS.experience[a.experience] || a.experience)],
+      ['Time', tr(LABELS.hours[a.hours] || a.hours)],
+      ['Budget', tr(LABELS.budget[a.budget] || a.budget)],
+      ['Style', tr(LABELS.style[a.style] || a.style)],
+      ['Goal', tr(LABELS.appetite[a.appetite] || a.appetite)],
     ];
-    if (a.deadline && a.deadline !== '0') chipData.splice(3, 0, ['Target', LABELS.deadline[a.deadline] || a.deadline]);
-    if (!plan.isExplore && plan.track && plan.track.demand) chipData.push(['Demand', plan.track.demand]);
+    if (a.deadline && a.deadline !== '0') chipData.splice(3, 0, ['Target', tr(LABELS.deadline[a.deadline] || a.deadline)]);
+    if (!plan.isExplore && plan.track && plan.track.demand) chipData.push(['Demand', tr(plan.track.demand)]);
     var chips = chipData.map(function (c) {
       return '<span class="chip" data-k="' + esc(c[0]) + '">' + esc(T('chip.' + c[0], c[0])) + ': <strong>' + esc(c[1]) + '</strong></span>';
     }).join('');
@@ -890,7 +897,7 @@
     var stats = [
       [fmtTotal(plan.months), jobLabel, true],
       [String(plan.phases.length), plan.phases.length === 1 ? T('st.phase','phase') : T('st.phases','phases'), false],
-      ['~' + totalHours + 'h', T('st.hours','total study time'), false],
+      ['~' + totalHours + ' ' + T('unit.h','h'), T('st.hours','total study time'), false],
       [certCount ? String(certCount) : '—', certCount ? T('st.certsMapped','certifications mapped') : T('st.skillsFirst','skills-first (no certs)'), false],
     ].map(function (s) {
       return '<div class="stat' + (s[2] ? ' stat--lead' : '') + '"><div class="stat__num">' + esc(s[0]) + '</div><div class="stat__label">' + esc(s[1]) + '</div></div>';
@@ -953,14 +960,14 @@
         '<div class="callout callout--study"><strong>' + T('plan.studyPrefix', 'How to study this') + ' (' + esc(T('q.style.opt.' + a.style, LABELS.style[a.style] || 'your way')) + '):</strong> ' + esc(T('tip.' + a.style, STYLE_TIPS[a.style] || STYLE_TIPS.balanced)) + '</div>' +
 
         '<h2 style="margin-top:var(--sp-6)">' + T('plan.steps','Your step-by-step plan') + '</h2>' +
-        '<p class="step__help">' + T('plan.hint1', 'Timeframes assume about') + ' ' + esc(LABELS.hours[a.hours] || (plan.hours + 'h/week')) + ' ' + T('plan.hint2', 'and adjust to your experience — roughly') + ' <strong>~' + totalHours + ' ' + T('plan.hoursWord', 'hours') + '</strong> ' + T('plan.hint3', 'of study in total. Life happens: treat them as a compass, not a deadline.') + '</p>' +
+        '<p class="step__help">' + T('plan.hint1', 'Timeframes assume about') + ' ' + esc(tr(LABELS.hours[a.hours] || (plan.hours + 'h/week'))) + ' ' + T('plan.hint2', 'and adjust to your experience — roughly') + ' <strong>~' + totalHours + ' ' + T('plan.hoursWord', 'hours') + '</strong> ' + T('plan.hint3', 'of study in total. Life happens: treat them as a compass, not a deadline.') + '</p>' +
         '<div class="timeline">' +
-          plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, progress: progress, prevName: i > 0 ? plan.phases[i - 1].def.name : null }); }).join('') +
+          plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, progress: progress, prevName: i > 0 ? T('ph.' + plan.phases[i - 1].def.id + '.name', plan.phases[i - 1].def.name) : null }); }).join('') +
         '</div>' +
 
         (plan.isExplore ? '' :
           '<h2 style="margin-top:var(--sp-6)">' + T('plan.network','Your path network') + '</h2>' +
-          '<p class="step__help">The same journey as a network — foundations feed your track, your specialisation branches into optional lanes, and flag markers call out the milestones that prove real progress.</p>' +
+          '<p class="step__help">' + esc(tr('The same journey as a network — foundations feed your track, your specialisation branches into optional lanes, and flag markers call out the milestones that prove real progress.')) + '</p>' +
           tierLegend(plan.phases) +
           pathNetwork(plan)) +
 
@@ -971,8 +978,7 @@
         ladderHtml +
 
         '<div class="callout" style="margin-top:var(--sp-6)">' +
-          '<strong>Reminder:</strong> certification prices and free-program availability change often — confirm on each provider’s official site before paying. ' +
-          'Only ever practise on systems you own or are explicitly authorised to test.' +
+          '<strong>' + T('plan.reminder','Reminder') + ':</strong> ' + esc(tr('certification prices and free-program availability change often — confirm on each provider’s official site before paying. Only ever practise on systems you own or are explicitly authorised to test.')) +
         '</div>' +
       '</div>';
 

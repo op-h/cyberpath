@@ -85,6 +85,7 @@
     'tierlabel.foundation': 'الأساس', 'tierlabel.core': 'المهارات الأساسية', 'tierlabel.specialization': 'التخصّص',
     'tierlabel.certification': 'الشهادة', 'tierlabel.career': 'انطلاق مهني',
     // tracks
+    'trk.roles': 'الأدوار', 'trk.certs': 'الشهادات',
     'trk.offensive.name': 'الأمن الهجومي / اختبار الاختراق', 'trk.offensive.tag': 'اخترق بأخلاق. لاكِ الثغرات قبل المهاجمين.', 'trk.offensive.roles': 'مختبِر اختراق · فريق أحمر · صائد مكافآت الثغرات · مستشار أمني',
     'trk.defensive.name': 'الأمن الدفاعي / الفريق الأزرق', 'trk.defensive.tag': 'اكتشف، استجب، واصطاد. كون السبب اللي يفشّل الهجوم.', 'trk.defensive.roles': 'محلل SOC · مستجيب حوادث · صائد تهديدات · مهندس كشف',
     'trk.grc.name': 'الحوكمة والمخاطر والامتثال (GRC)', 'trk.grc.tag': 'الأمن كوظيفة عمل: سياسات ومخاطر وتدقيق وأُطُر.', 'trk.grc.roles': 'محلل GRC · مدقّق تقنية معلومات · محلل مخاطر · مدير امتثال',
@@ -182,11 +183,29 @@
     'q.apt_report.legend': 'بصدق، شلون تشعر تجاه كتابة التقارير؟',
     'q.apt_report.opt.energizes': 'أستمتع بيها', 'q.apt_report.opt.professional': 'جزء من الشغل', 'q.apt_report.opt.minimal': 'خلّيني عملي',
 
+    'plan.reminder': 'تذكير',
     // step-by-step help sentence
     'plan.hint1': 'المدد تفترض حوالي', 'plan.hint2': 'وتتأقلم مع خبرتك — تقريبًا',
     'plan.hoursWord': 'ساعة', 'plan.hint3': 'دراسة إجمالًا. الحياة تصير: اعتبرها بوصلة مو موعد نهائي.',
     // build loader
-    'load.ready': 'الخارطة جاهزة.'
+    'load.ready': 'الخارطة جاهزة.',
+
+    // duration/time units
+    'unit.week': ' أسبوع', 'unit.weeks': ' أسابيع', 'unit.month': ' شهر', 'unit.months': ' أشهر',
+    'unit.wks': ' أسبوع', 'unit.h': 'ساعة',
+
+    // deadline verdict (fragments concatenated around dynamic numbers)
+    'dl.ok.head': 'على المسار الصحيح.',
+    'dl.ok.a': ' بـ', 'dl.ok.b': ' ساعة بالأسبوع، خطتك تنتهي حوالي ',
+    'dl.ok.c': ' — ضمن هدفك ', 'dl.ok.d': ' أشهر. حافظ على الإيقاع وراح توصل.',
+    'dl.warn.head': 'انتبه لموعدك النهائي.',
+    'dl.warn.a': ' خطتك تقدّر حوالي ', 'dl.warn.b': ' بـ',
+    'dl.warn.c': ' ساعة/أسبوع، وهذا أطول من هدفك ', 'dl.warn.d': ' أشهر. ',
+    'dl.a1.a': 'حتى توصل ', 'dl.a1.b': ' أشهر تحتاج تقريبًا ',
+    'dl.a1.c': ' ساعة بالأسبوع', 'dl.a1.d': '. إذا هذا مو واقعي، إمّا مدّد هدفك أو ضيّق النطاق (مثلاً استهدف شهادة مدخلية وحدة أول).',
+    'dl.a2.a': 'الوصول لـ', 'dl.a2.b': ' أشهر من هنا يحتاج ~',
+    'dl.a2.c': ' ساعة بالأسبوع وهذا غير واقعي. هدف ', 'dl.a2.d': ' أشهر طموح جدًا لنقطة انطلاقك — فكّر تمدّده لـ',
+    'dl.a2.e': ' أشهر، أو ركّز على شهادة ودور بمستوى المدخل أول.'
   };
 
   var lang = 'en';
@@ -196,6 +215,11 @@
   function t(key, en) {
     if (lang === 'ar' && AR[key] != null) return AR[key];
     return en != null ? en : (AR[key] != null ? AR[key] : key);
+  }
+  // Phrase translation: look up the EXACT English string in the content map (graceful).
+  function tr(s) {
+    if (lang === 'ar' && window.CYBERPATH_PHRASES && window.CYBERPATH_PHRASES[s] != null) return window.CYBERPATH_PHRASES[s];
+    return s;
   }
 
   // Capture the original English for every [data-i18n] node once, so 'en' can restore it.
@@ -239,33 +263,40 @@
     }
     var rain = ov.querySelector('.lang-glitch__rain');
     var label = ov.querySelector('.lang-glitch__label');
-    var target = lang === 'ar' ? 'ENGLISH' : 'ﺗﺮﺟﻤﺔ';
-    var chars = '01ﷲabcdefﺣﺮﻮﻒﺏﺕﻥ<>#$%&*+=/\\|';
+    label.setAttribute('dir', 'auto');
+    // lang is still the CURRENT language here; we're switching to the other one.
+    var finalWord = lang === 'ar' ? 'ENGLISH' : 'العربية';
+    var chars = '01ABCDEF#%&*<>/\\|=+-01';
     ov.hidden = false; requestAnimationFrame(function () { ov.classList.add('is-on'); });
-    var ticks = 0, maxTicks = 13;
+    var ticks = 0, maxTicks = 14;
     var iv = setInterval(function () {
       ticks++;
       var rows = [];
       for (var r = 0; r < 30; r++) {
         var s = '';
-        for (var c = 0; c < 130; c++) s += chars[(Math.floor((ticks * 7 + r * 13 + c * 3) % chars.length))];
+        for (var c = 0; c < 130; c++) s += chars[(ticks * 7 + r * 13 + c * 3) % chars.length];
         rows.push(s);
       }
       rain.textContent = rows.join('\n');
-      // scramble the label toward the target word
-      var out = '';
-      for (var i = 0; i < target.length; i++) out += (ticks / maxTicks) * target.length > i ? target[i] : chars[(ticks + i) % chars.length];
-      label.textContent = out;
+      // Latin-only scramble (no bidi jumps), then reveal the clean language name at the end.
+      if (ticks < maxTicks - 2) {
+        var out = '';
+        for (var i = 0; i < 11; i++) out += chars[(ticks * 5 + i * 3) % chars.length];
+        label.textContent = out;
+      } else {
+        label.textContent = finalWord;
+      }
       if (ticks >= maxTicks) {
         clearInterval(iv);
         done();
-        setTimeout(function () { ov.classList.remove('is-on'); setTimeout(function () { ov.hidden = true; }, 200); }, 180);
+        setTimeout(function () { ov.classList.remove('is-on'); setTimeout(function () { ov.hidden = true; }, 220); }, 200);
       }
     }, 55);
   }
 
   window.CYBERPATH_I18N = {
     t: t,
+    tr: tr,
     get lang() { return lang; },
     apply: applyLang,
     onChange: onChange,
