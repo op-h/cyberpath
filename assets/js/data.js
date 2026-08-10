@@ -40,9 +40,9 @@ const FOUNDATIONS = [
       { name: 'Cisco Networking Academy', url: 'https://www.netacad.com/courses/networking', note: 'Free networking basics' },
     ],
     paid: [
-      { name: 'CompTIA Network+ course', url: 'https://www.comptia.org/certifications/network-plus', note: 'Optional structured path' },
+      { name: 'CompTIA Network+ course', url: 'https://www.comptia.org/certifications/network', note: 'Optional structured path' },
     ],
-    certs: [{ name: 'CompTIA Network+', tier: TIER.MID, level: 'entry', optional: true, url: 'https://www.comptia.org/certifications/network-plus' }],
+    certs: [{ name: 'CompTIA Network+', tier: TIER.MID, level: 'entry', optional: true, url: 'https://www.comptia.org/certifications/network' }],
   },
   {
     id: 'linux',
@@ -77,11 +77,11 @@ const FOUNDATIONS = [
       { name: 'Professor Messer (YouTube playlists)', url: 'https://www.youtube.com/@professormesser/playlists', note: 'Security+ & Network+ as free playlists' },
     ],
     paid: [
-      { name: 'CompTIA Security+ course + exam', url: 'https://www.comptia.org/certifications/security-plus', note: 'The industry entry standard' },
+      { name: 'CompTIA Security+ course + exam', url: 'https://www.comptia.org/certifications/security', note: 'The industry entry standard' },
     ],
     certs: [
       { name: 'ISC2 Certified in Cybersecurity (CC)', tier: TIER.FREE, level: 'entry', url: 'https://www.isc2.org/certifications/cc' },
-      { name: 'CompTIA Security+', tier: TIER.MID, level: 'entry', url: 'https://www.comptia.org/certifications/security-plus' },
+      { name: 'CompTIA Security+', tier: TIER.MID, level: 'entry', url: 'https://www.comptia.org/certifications/security' },
     ],
   },
   {
@@ -235,7 +235,7 @@ const TRACKS = {
           { name: 'Security Blue Team — BTL1', url: 'https://www.securityblue.team/', note: 'Practical blue exam' },
         ],
         certs: [
-          { name: 'CompTIA Security+', tier: TIER.MID, level: 'entry', url: 'https://www.comptia.org/certifications/security-plus' },
+          { name: 'CompTIA Security+', tier: TIER.MID, level: 'entry', url: 'https://www.comptia.org/certifications/security' },
           { name: 'Microsoft SC-200', tier: TIER.LOW, level: 'entry', url: 'https://learn.microsoft.com/credentials/certifications/security-operations-analyst/' },
           { name: 'CompTIA CySA+', tier: TIER.MID, level: 'core', url: 'https://www.comptia.org/certifications/cybersecurity-analyst' },
           { name: 'Security Blue Team BTL1', tier: TIER.MID, level: 'core', url: 'https://www.securityblue.team/' },
@@ -307,7 +307,7 @@ const TRACKS = {
         ],
         certs: [
           { name: 'ISC2 Certified in Cybersecurity (CC)', tier: TIER.FREE, level: 'entry', url: 'https://www.isc2.org/certifications/cc' },
-          { name: 'CompTIA Security+', tier: TIER.MID, level: 'entry', url: 'https://www.comptia.org/certifications/security-plus' },
+          { name: 'CompTIA Security+', tier: TIER.MID, level: 'entry', url: 'https://www.comptia.org/certifications/security' },
           { name: 'ISACA CISA', tier: TIER.MID, level: 'core', url: 'https://www.isaca.org/credentialing/cisa' },
           { name: 'ISACA CISM', tier: TIER.MID, level: 'core', url: 'https://www.isaca.org/credentialing/cism' },
         ],
@@ -405,7 +405,7 @@ const TRACKS = {
   appsec: {
     name: 'Application Security / DevSecOps',
     short: 'AppSec',
-    demand: 'High', community: { name: 'OWASP community', url: 'https://owasp.org/community/' },
+    demand: 'High', community: { name: 'OWASP community', url: 'https://owasp.org/' },
     tagline: 'Secure the code and the pipeline. Where developers meet security.',
     roles: ['Application Security Engineer', 'DevSecOps Engineer', 'Bug Bounty Hunter'],
     phases: [
@@ -783,8 +783,8 @@ const HIRING = {
     { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/' },
   ],
   interview: [
-    { name: 'PayloadsAllTheThings', url: 'https://github.com/swisskyrepo/PayloadsAllTheThings' },
-    { name: 'Offensive-interview questions', url: 'https://github.com/WebBreacher/offensiveinterview' },
+    { name: 'Security interview prep (Grace Nolan)', url: 'https://github.com/gracenolan/Notes' },
+    { name: 'PayloadsAllTheThings (offensive reference)', url: 'https://github.com/swisskyrepo/PayloadsAllTheThings' },
   ],
 };
 

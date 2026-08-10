@@ -61,10 +61,16 @@
       <span class="brand__mark" aria-hidden="true">&gt;_</span>
       <span class="brand__name">CYBER<span class="brand__accent">PATH</span></span>
     </a>
-    <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
-      <span class="theme-toggle__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg></span>
-      <span class="theme-toggle__label">Theme</span>
-    </button>
+    <div class="header-controls">
+      <button type="button" class="theme-toggle" id="lang-toggle" aria-label="Switch language / تبديل اللغة">
+        <span class="theme-toggle__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span>
+        <span class="theme-toggle__label lang-toggle__label">العربية</span>
+      </button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false">
+        <span class="theme-toggle__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg></span>
+        <span class="theme-toggle__label" data-i18n="nav.theme">Theme</span>
+      </button>
+    </div>
   </header>
 
   <main id="main" tabindex="-1">
@@ -72,20 +78,20 @@
     <!-- HERO -->
     <section class="hero" id="hero" aria-labelledby="hero-title">
       <div class="hero__inner">
-        <p class="hero__eyebrow">Your route into cybersecurity, mapped</p>
+        <p class="hero__eyebrow" data-i18n="hero.eyebrow">Your route into cybersecurity, mapped</p>
         <h1 class="hero__title" id="hero-title">
-          Stop guessing.<br>Get a <span class="grad">real roadmap.</span>
+          <span data-i18n="hero.title.a">Stop guessing.</span><br><span data-i18n="hero.title.b">Get a </span><span class="grad" data-i18n="hero.title.c">real roadmap.</span>
         </h1>
-        <p class="hero__lede">
+        <p class="hero__lede" data-i18n="hero.lede">
           Answer a few quick questions. We’ll build you a phase-by-phase plan with
           realistic timeframes, the certifications worth chasing, and resources tuned
           to your budget — free or paid. Then download it.
         </p>
         <div class="hero__actions">
           <button type="button" class="btn btn--primary btn--lg" id="start-btn">
-            Build my roadmap <span aria-hidden="true">→</span>
+            <span data-i18n="hero.cta">Build my roadmap</span> <span aria-hidden="true">→</span>
           </button>
-          <a class="btn btn--ghost btn--lg" href="#tracks-static">Browse the tracks</a>
+          <a class="btn btn--ghost btn--lg" href="#tracks-static" data-i18n="hero.browse">Browse the tracks</a>
         </div>
         <noscript>
           <p class="hero__lede" style="margin-top:1rem">
@@ -95,9 +101,9 @@
         </noscript>
 
         <ul class="hero__stats" aria-label="What the planner covers">
-          <li><strong>6</strong><span>career tracks</span></li>
-          <li><strong>20+</strong><span>certifications mapped</span></li>
-          <li><strong>Free</strong><span>&amp; paid resources</span></li>
+          <li><strong>6</strong><span data-i18n="hero.stat.tracks">career tracks</span></li>
+          <li><strong>20+</strong><span data-i18n="hero.stat.certs">certifications mapped</span></li>
+          <li><strong>Free</strong><span data-i18n="hero.stat.res">&amp; paid resources</span></li>
         </ul>
       </div>
 
@@ -121,8 +127,8 @@
     <section class="wizard" id="wizard" hidden aria-labelledby="wizard-heading">
       <div class="wizard__inner">
         <div class="wizard__head">
-          <h1 class="wizard__heading" id="wizard-heading">Build your roadmap</h1>
-          <p class="wizard__progress-text" role="status">Step <span id="step-now">1</span> of <span id="step-total">8</span></p>
+          <h1 class="wizard__heading" id="wizard-heading" data-i18n="wiz.heading">Build your roadmap</h1>
+          <p class="wizard__progress-text" role="status"><span data-i18n="wiz.step">Step</span> <span id="step-now">1</span> <span data-i18n="wiz.of">of</span> <span id="step-total">8</span></p>
         </div>
 
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="1" aria-valuetext="Step 1 of 8" aria-label="Questionnaire progress">
@@ -136,9 +142,9 @@
           <div id="steps"><!-- fieldsets injected by app.js --></div>
 
           <div class="wizard__nav">
-            <button type="button" class="btn btn--ghost" id="back-btn" hidden><span aria-hidden="true">←</span> Back</button>
-            <button type="button" class="btn btn--primary" id="next-btn">Next <span aria-hidden="true">→</span></button>
-            <button type="submit" class="btn btn--primary" id="generate-btn" hidden>Generate my plan <svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17l-1.9-5.1L4.5 10l5.6-1.4z"/></svg></button>
+            <button type="button" class="btn btn--ghost" id="back-btn" hidden><span aria-hidden="true">←</span> <span data-i18n="wiz.back">Back</span></button>
+            <button type="button" class="btn btn--primary" id="next-btn"><span data-i18n="wiz.next">Next</span> <span aria-hidden="true">→</span></button>
+            <button type="submit" class="btn btn--primary" id="generate-btn" hidden><span data-i18n="wiz.generate">Generate my plan</span> <svg class="ico" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17l-1.9-5.1L4.5 10l5.6-1.4z"/></svg></button>
           </div>
           <p class="wizard__hint" id="step-error" role="alert"></p>
         </form>
@@ -156,11 +162,8 @@
          hand-written <noscript> mirror below carries the same content. -->
     <section class="static-ref" id="tracks-static" aria-labelledby="static-heading">
       <div class="static-ref__inner">
-        <p class="static-note" id="static-note">
-          Prefer to skim first? Here are the six tracks. Use “Build my roadmap” above for a
-          plan tailored to your experience, time and budget.
-        </p>
-        <h2 id="static-heading">The six cybersecurity tracks</h2>
+        <p class="static-note" id="static-note" data-i18n="static.note">Prefer to skim first? Here are the six tracks. Use “Build my roadmap” above for a plan tailored to your experience, time and budget.</p>
+        <h2 id="static-heading" data-i18n="static.heading">Or browse the six tracks</h2>
         <div id="static-tracks" class="static-grid">
           <!-- app.js fills this from the same data; a hand-written summary follows
                in <noscript> so it also renders with JS fully disabled. -->
@@ -207,19 +210,19 @@
 
   <section class="faq-section" aria-labelledby="faq-h">
     <div class="faq">
-      <h2 id="faq-h">Frequently asked questions</h2>
-      <details class="faq__item"><summary>Do I need a degree to get into cybersecurity?</summary>
-        <p>For most technical roles, no — hands-on skill, home-lab projects, write-ups and recognised certifications carry real weight. Some employers and regions still prefer a degree, but this planner focuses on demonstrable skills and the certs hiring managers actually search for.</p></details>
-      <details class="faq__item"><summary>Are the free resources really enough to get hired?</summary>
-        <p>To build genuine, hireable skill — yes. Platforms like TryHackMe, PortSwigger Web Security Academy, Blue Team Labs, CyberDefenders and the YouTube channels listed can take you a long way for free. Certifications are usually where money goes, and even then one well-chosen cert often suffices for a first role.</p></details>
-      <details class="faq__item"><summary>How current is the certification information?</summary>
-        <p>Certification names and paths are reviewed periodically — see the “content reviewed” date in the footer. Exam prices and free-program availability change frequently, so cost is shown as a rough tier ($ / $$ / $$$) and you should always confirm the current price on the provider’s official site before paying.</p></details>
-      <details class="faq__item"><summary>How long will it actually take me?</summary>
-        <p>It depends on your weekly hours and where you’re starting from. The planner scales every phase to your real availability and gives a realistic range plus a total study-hours estimate. Treat the timeline as a compass, not a deadline.</p></details>
-      <details class="faq__item"><summary>Is CYBERPATH affiliated with Hack The Box, TryHackMe or INE?</summary>
-        <p>No. CYBERPATH is an independent, free planner. It links to those platforms (and many others) purely as learning resources; it isn’t sponsored by or affiliated with any of them.</p></details>
-      <details class="faq__item"><summary>Do you collect my data?</summary>
-        <p>No. There’s no tracking, no account and no server. Your answers stay in your browser (and inside the share link, if you choose to copy one). Your phase progress is saved only on your own device.</p></details>
+      <h2 id="faq-h" data-i18n="faq.h">Frequently asked questions</h2>
+      <details class="faq__item"><summary data-i18n="faq.q1">Do I need a degree to get into cybersecurity?</summary>
+        <p data-i18n="faq.a1">For most technical roles, no — hands-on skill, home-lab projects, write-ups and recognised certifications carry real weight. Some employers and regions still prefer a degree, but this planner focuses on demonstrable skills and the certs hiring managers actually search for.</p></details>
+      <details class="faq__item"><summary data-i18n="faq.q2">Are the free resources really enough to get hired?</summary>
+        <p data-i18n="faq.a2">To build genuine, hireable skill — yes. Platforms like TryHackMe, PortSwigger Web Security Academy, Blue Team Labs, CyberDefenders and the YouTube channels listed can take you a long way for free. Certifications are usually where money goes, and even then one well-chosen cert often suffices for a first role.</p></details>
+      <details class="faq__item"><summary data-i18n="faq.q3">How current is the certification information?</summary>
+        <p data-i18n="faq.a3">Certification names and paths are reviewed periodically — see the “content reviewed” date in the footer. Exam prices and free-program availability change frequently, so cost is shown as a rough tier ($ / $$ / $$$) and you should always confirm the current price on the provider’s official site before paying.</p></details>
+      <details class="faq__item"><summary data-i18n="faq.q4">How long will it actually take me?</summary>
+        <p data-i18n="faq.a4">It depends on your weekly hours and where you’re starting from. The planner scales every phase to your real availability and gives a realistic range plus a total study-hours estimate. Treat the timeline as a compass, not a deadline.</p></details>
+      <details class="faq__item"><summary data-i18n="faq.q5">Is CYBERPATH affiliated with Hack The Box, TryHackMe or INE?</summary>
+        <p data-i18n="faq.a5">No. CYBERPATH is an independent, free planner. It links to those platforms (and many others) purely as learning resources; it isn’t sponsored by or affiliated with any of them.</p></details>
+      <details class="faq__item"><summary data-i18n="faq.q6">Do you collect my data?</summary>
+        <p data-i18n="faq.a6">No. There’s no tracking, no account and no server. Your answers stay in your browser (and inside the share link, if you choose to copy one). Your phase progress is saved only on your own device.</p></details>
     </div>
   </section>
 
@@ -246,12 +249,12 @@
     </p>
     <p class="site-footer__meta">Built as a static site · works offline · no tracking · no account · content reviewed <span id="last-reviewed">2026-08</span>.</p>
     <p class="credit">
-      <span class="credit__by">Designed by</span>
+      <span class="credit__by" data-i18n="foot.by">Designed by</span>
       <a class="credit__link" href="https://tryhackme.com/p/oph" target="_blank" rel="noopener noreferrer">
         <span class="credit__mark" aria-hidden="true">&gt;_</span>oph<span class="visually-hidden"> (TryHackMe profile, opens in a new tab)</span>
         <span class="credit__arrow" aria-hidden="true">↗</span>
       </a>
-      <span class="credit__by">· idea inspired by</span>
+      <span class="credit__by" data-i18n="foot.inspired">· idea inspired by</span>
       <a class="credit__link" href="https://tryhackme.com/p/abooo2d9" target="_blank" rel="noopener noreferrer">
         <span class="credit__mark" aria-hidden="true">&gt;_</span>abdulla.d9<span class="visually-hidden"> (TryHackMe profile, opens in a new tab)</span>
         <span class="credit__arrow" aria-hidden="true">↗</span>
@@ -262,9 +265,10 @@
   <!-- Print-only watermark; repeats on every page of the downloaded PDF. -->
   <div class="print-watermark" aria-hidden="true"><span>CYBERPATH<small>tryhackme.com/p/oph</small></span></div>
 
-  <!-- defer keeps execution order (data.js → match.js → app.js) while freeing the main thread. -->
+  <!-- defer keeps execution order (data.js → match.js → i18n.js → app.js). -->
   <script defer src="assets/js/data.js"></script>
   <script defer src="assets/js/match.js"></script>
+  <script defer src="assets/js/i18n.js"></script>
   <script defer src="assets/js/app.js"></script>
 </body>
 </html>

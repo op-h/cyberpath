@@ -44,7 +44,7 @@
     --sp-1: .35rem; --sp-2: .6rem; --sp-3: 1rem; --sp-4: 1.5rem;
     --sp-5: 2.25rem; --sp-6: 3.5rem; --sp-7: 5rem;
 
-    --radius: 10px; --radius-sm: 6px; --radius-lg: 14px; --radius-pill: 999px;
+    --radius: 12px; --radius-sm: 8px; --radius-lg: 16px; --radius-pill: 999px;
     --maxw: 1120px;
     --section-space: clamp(var(--sp-5), 6vw, var(--sp-7));
     --transition: 180ms cubic-bezier(.2,.7,.3,1);
@@ -58,13 +58,13 @@
 
   /* DARK (default) — cool near-black neutral ramp; green is a scalpel, not a wash. */
   :root, :root[data-theme="dark"] {
-    --bg: #0a0e14;
-    --bg-grid: rgba(159,239,0,.028);
-    --surface: #10151d;
-    --surface-2: #161c26;
-    --surface-3: #1e2632;
-    --border: #212a36;
-    --border-strong: #313c4b;
+    --bg: #0c111b;              /* softer slate than pure hacker-black — leans INE */
+    --bg-grid: rgba(108,182,255,.03);
+    --surface: #131a26;
+    --surface-2: #1a2230;
+    --surface-3: #232d3d;
+    --border: #263143;
+    --border-strong: #36455a;
     --text: #e8edf3;
     --muted: #a2adba;        /* ~8.5:1 on --bg */
     --faint: #8794a1;        /* labels; ~5.2:1 on surface-2 */
@@ -207,7 +207,7 @@
 @layer components {
 
   /* Brand + theme toggle */
-  .brand { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-weight: 800; }
+  .brand { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-weight: 800; direction: ltr; }
   .brand__mark { font-family: var(--font-mono); color: var(--accent); font-size: 1.15em; }
   .brand__name { letter-spacing: .04em; font-size: 1.05rem; }
   .brand__accent { color: var(--accent); }
@@ -258,7 +258,8 @@
     padding-top: var(--sp-4); border-top: 1px solid var(--border);
   }
   .hero__stats li { display: flex; flex-direction: column; }
-  .hero__stats strong { font-size: var(--step-2); color: var(--accent); font-family: var(--font-mono); }
+  .hero__stats strong { font-size: var(--step-2); color: var(--text); font-family: var(--font-mono); }
+  .hero__stats li:first-child strong { color: var(--accent); }  /* one green accent, not three */
   .hero__stats span { color: var(--muted); font-size: var(--step--1); }
 
   /* Terminal card */
@@ -418,6 +419,8 @@
   .tier[data-tier="mid"]  { color: var(--tier-mid); }
   .tier[data-tier="high"] { color: var(--tier-high); }
   .cert__lvl { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--faint); font-family: var(--font-mono); }
+  .cert__price { margin-inline-start: auto; font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); white-space: nowrap; }
+  .cert__price + .tier { margin-inline-start: var(--sp-2); }
 
   .callout {
     border: 1px solid var(--border-strong); border-inline-start: 4px solid var(--accent-2);
@@ -705,6 +708,75 @@
 }
 @media (max-width: 640px) and (prefers-reduced-motion: no-preference) {
   .option:hover { transform: none; }                        /* no hover-lift jitter on touch */
+}
+
+/* ---------- v4: build loader, neural network, theme cross-fade ---------- */
+@layer components {
+  /* "Building your roadmap" loader */
+  .build-overlay { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
+    padding: var(--sp-4); background: color-mix(in oklab, var(--bg) 90%, black); opacity: 0; transition: opacity .25s ease; }
+  .build-overlay.is-on { opacity: 1; }
+  .build-term { width: min(560px, 92vw); border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface) 94%, black); box-shadow: var(--shadow-lg); overflow: hidden; font-family: var(--font-mono); }
+  .build-log { margin: 0; padding: var(--sp-4); font-size: .9rem; line-height: 1.9; color: var(--accent);
+    min-height: 9em; white-space: pre-wrap; }
+  .build-progress { height: 3px; background: var(--surface-3); }
+  .build-progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .18s linear; }
+
+  /* Neural-network styling for the path map (nodes = neurons, spine = synapse) */
+  .pathnet { background: radial-gradient(120% 80% at 100% 0, color-mix(in oklab, var(--link) 8%, transparent), transparent 60%), var(--surface); }
+  .pathnet__dot {
+    width: 16px; height: 16px; inset-inline-start: -27px;
+    background: radial-gradient(circle at 38% 34%, color-mix(in oklab, var(--node) 92%, white), var(--node) 45%, color-mix(in oklab, var(--node) 35%, var(--surface)));
+    border: 2px solid var(--node);
+    box-shadow: 0 0 0 4px var(--bg), 0 0 10px -1px color-mix(in oklab, var(--node) 60%, transparent);
+  }
+  .pathnet__spine::before {
+    background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--link) 70%, transparent) 22%, transparent 42%, color-mix(in oklab, var(--accent) 70%, transparent) 62%, transparent 82%);
+    background-size: 100% 220%; opacity: .6;
+  }
+  .pathnet__branches li { position: relative; }
+
+  /* Theme cross-fade: only while switching (added by JS), never a standing perf cost. */
+  .theme-switching *, .theme-switching *::before, .theme-switching *::after {
+    transition: background-color .34s ease, border-color .34s ease, color .34s ease, fill .34s ease !important;
+  }
+  /* View-Transition crossfade tuning (Chromium) */
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .34s; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Signal travelling down the synapse + gentle neuron pulse */
+  .pathnet__spine::before { animation: pn-synapse 3.4s linear infinite; }
+  @keyframes pn-synapse { from { background-position: 0 -110%; } to { background-position: 0 110%; } }
+  .pathnet__node:not(.pathnet__node--ms) .pathnet__dot { animation: pn-neuron 2.6s ease-in-out infinite; }
+  .pathnet__node:nth-child(2n) .pathnet__dot { animation-delay: .7s; }
+  .pathnet__node:nth-child(3n) .pathnet__dot { animation-delay: 1.3s; }
+  @keyframes pn-neuron {
+    0%,100% { box-shadow: 0 0 0 4px var(--bg), 0 0 8px -2px color-mix(in oklab, var(--node) 55%, transparent); }
+    50%     { box-shadow: 0 0 0 4px var(--bg), 0 0 17px 0 color-mix(in oklab, var(--node) 78%, transparent); }
+  }
+}
+
+/* ---------- v5: i18n (glitch toggle, RTL) ---------- */
+@layer components {
+  .header-controls { display: flex; align-items: center; gap: var(--sp-2); }
+
+  /* "Hacker" language-switch glitch */
+  .lang-glitch { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; overflow: hidden;
+    background: color-mix(in oklab, var(--bg) 88%, black); opacity: 0; transition: opacity .12s ease; }
+  .lang-glitch.is-on { opacity: 1; }
+  .lang-glitch__rain { position: absolute; inset: 0; margin: 0; padding: var(--sp-4); white-space: pre; overflow: hidden;
+    font-family: var(--font-mono); font-size: 1rem; line-height: 1.25; color: var(--accent); opacity: .3; user-select: none; }
+  .lang-glitch__label { position: relative; font-family: var(--font-mono); font-weight: 800; letter-spacing: .12em;
+    font-size: clamp(1.6rem, 8vw, 3rem); color: var(--accent); text-shadow: 0 0 18px color-mix(in oklab, var(--accent) 55%, transparent); }
+
+  /* RTL: keep code / data / latin runs left-to-right for readability */
+  [dir="rtl"] .term__body, [dir="rtl"] .build-log, [dir="rtl"] .pathnet__idx,
+  [dir="rtl"] .phase__dur, [dir="rtl"] .cert__price, [dir="rtl"] .match__bars li,
+  [dir="rtl"] .hero__stats strong, [dir="rtl"] .stat__num, [dir="rtl"] .lang-glitch__rain { direction: ltr; }
+  [dir="rtl"] .hero__stats li, [dir="rtl"] .stat, [dir="rtl"] .cert__lvl { text-align: start; }
+  [dir="rtl"] .tweak select { background-position: left .7rem center; }
 }
 
 /* ---------- PRINT (this is the "download as PDF" path) ---------- */

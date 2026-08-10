@@ -32,6 +32,8 @@
       'stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
       (ICON_PATHS[name] || '') + '</svg>';
   }
+  // Translate helper: Arabic when active, English fallback otherwise.
+  function T(k, en) { var I = window.CYBERPATH_I18N; return I ? I.t(k, en) : en; }
   var prefersReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   /* Persistence: last plan (so returning shows your roadmap) + per-phase progress. */
@@ -86,8 +88,11 @@
 
   if (toggle) toggle.addEventListener('click', function () {
     var next = currentTheme() === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    var apply = function () { applyTheme(next); try { localStorage.setItem(THEME_KEY, next); } catch (e) {} };
+    if (prefersReduce) { apply(); return; }
+    root.classList.add('theme-switching');                 // smooth colour cross-fade everywhere
+    if (document.startViewTransition) document.startViewTransition(apply); else apply();
+    setTimeout(function () { root.classList.remove('theme-switching'); }, 380);
   });
 
   // Follow the OS theme when the user has NOT made an explicit choice.
@@ -120,10 +125,8 @@
         '</article>';
     }).join('');
 
-    var note = byId('static-note');
-    if (note) { note.textContent = 'Prefer to skim first? Here are the six tracks. Use “Build my roadmap” for a plan tailored to you.'; note.hidden = false; }
-    var heading = byId('static-heading');
-    if (heading) heading.textContent = 'Or browse the six tracks';
+    var note = byId('static-note'); if (note) note.hidden = false;
+    // Note/heading text is owned by the HTML + i18n layer (data-i18n), not overwritten here.
   })();
 
   /* ----------------------------------------------------------------
@@ -210,19 +213,6 @@
     }
   });
 
-  // Reopen the wizard WITHOUT clearing answers, so the learner can tweak and regenerate.
-  function editAnswers() {
-    QUESTIONS.forEach(function (q) {
-      var v = answers[q.id];
-      if (q.type === 'checkbox') (v || []).forEach(function (x) { var el = byId(q.id + '-' + x); if (el) el.checked = true; });
-      else { var el = byId(q.id + '-' + v); if (el) el.checked = true; }
-    });
-    showView('wizard');
-    stepIndex = 0;
-    showStep(0, true);
-    els.wizard.scrollIntoView({ block: 'start' });
-  }
-
   // A question is active unless its showIf(answers) predicate says otherwise. This is
   // what lets the aptitude block appear only on the "I'm not sure yet" path.
   function isActive(i) { var q = QUESTIONS[i]; return !q.showIf || !!q.showIf(answers); }
@@ -247,7 +237,7 @@
     els.bar.style.width = ((pos + 1) / total) * 100 + '%';
     els.progress.setAttribute('aria-valuemax', String(total));
     els.progress.setAttribute('aria-valuenow', String(pos + 1));
-    els.progress.setAttribute('aria-valuetext', 'Step ' + (pos + 1) + ' of ' + total);
+    els.progress.setAttribute('aria-valuetext', T('wiz.step', 'Step') + ' ' + (pos + 1) + ' ' + T('wiz.of', 'of') + ' ' + total);
 
     els.back.hidden = pos === 0;
     var last = pos === total - 1;
@@ -317,7 +307,7 @@
     var top = ranked[0];
     var name = DATA.TRACKS[top.track] ? DATA.TRACKS[top.track].short : top.track;
     lean.hidden = false;
-    lean.innerHTML = '<span class="wizard__lean-k">Leaning toward</span> <strong>' + esc(name) + '</strong> <span class="wizard__lean-pct">' + top.confidencePct + '% fit</span>';
+    lean.innerHTML = '<span class="wizard__lean-k">' + T('wiz.lean','Leaning toward') + '</span> <strong>' + esc(name) + '</strong> <span class="wizard__lean-pct">' + top.confidencePct + '% ' + T('wiz.fit','fit') + '</span>';
   }
 
   els.form.addEventListener('submit', function (e) {
@@ -331,8 +321,39 @@
     }
     if (!validateStep(stepIndex)) return;
     commitStep(stepIndex);
-    generate(true);
+    runBuildSequence(function () { generate(true); });
   });
+
+  // A short, terminal-style "building your roadmap" sequence before the reveal.
+  function runBuildSequence(cb) {
+    if (prefersReduce) { cb(); return; }
+    var ov = byId('build-overlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'build-overlay'; ov.className = 'build-overlay'; ov.setAttribute('aria-hidden', 'true');
+      ov.innerHTML = '<div class="build-term"><div class="term__bar"><span></span><span></span><span></span></div><pre class="build-log"></pre><div class="build-progress"><span></span></div></div>';
+      document.body.appendChild(ov);
+    }
+    var log = $('.build-log', ov), bar = $('.build-progress span', ov);
+    log.textContent = ''; if (bar) bar.style.width = '0%';
+    ov.hidden = false; requestAnimationFrame(function () { ov.classList.add('is-on'); });
+    var lines = ['root@cyberpath:~$ ./plan --build', '[*] profiling learner…', '[*] scoring track fit…',
+      '[*] mapping phases & prerequisites…', '[*] selecting certifications…', '[*] wiring the path network…', '[+] roadmap ready.'];
+    var i = 0;
+    (function tick() {
+      if (i < lines.length) {
+        log.textContent += (i ? '\n' : '') + lines[i];
+        if (bar) bar.style.width = Math.round((i + 1) / lines.length * 100) + '%';
+        i++; setTimeout(tick, i === 1 ? 260 : 200);
+      } else {
+        setTimeout(function () {
+          ov.classList.remove('is-on');
+          setTimeout(function () { ov.hidden = true; }, 220);
+          cb();
+        }, 320);
+      }
+    })();
+  }
 
   // Build + render the plan. When `pushHash` is true we also encode the answers into
   // the URL so the plan is bookmarkable/shareable.
@@ -564,6 +585,7 @@
     }).join('');
   }
 
+  var TIER_PRICE = { free: 'Free', low: '≈ $100–300', mid: '≈ $300–800', high: '$800+' };
   function certRow(c) {
     var t = c.tier;
     return '<li class="cert">' +
@@ -571,6 +593,7 @@
       (c.optional
         ? '<span class="cert__lvl">optional</span>'
         : (c.level ? '<span class="cert__lvl">' + esc(c.level) + '</span>' : '')) +
+      '<span class="cert__price">' + esc(TIER_PRICE[t.key] || '') + '</span>' +
       '<span class="tier" data-tier="' + esc(t.key) + '" aria-label="Cost tier: ' + esc(t.label) + ' — ' + esc(t.hint) + '">' + esc(t.label) + '</span>' +
       '</li>';
   }
@@ -597,27 +620,27 @@
     var done = opts.progress && opts.progress[def.id];
     return '<article class="phase" data-tier="' + esc(def.tier) + '">' +
       '<div class="phase__top">' +
-        '<div><span class="phase__idx">PHASE ' + (idx + 1) + '</span> ' +
+        '<div><span class="phase__idx">' + T('ph.phase','PHASE') + ' ' + (idx + 1) + '</span> ' +
           '<span class="phase__badge">' + esc(tierLabel) + '</span>' +
           '<h3 class="phase__name">' + esc(def.name) + '</h3></div>' +
         '<div class="phase__meta">' +
           '<span class="phase__dur">' + esc(fmtDuration(p.weeks)) + '</span>' +
-          '<label class="phase__check-label"><input type="checkbox" class="phase__check" data-phase="' + esc(def.id) + '"' + (done ? ' checked' : '') + '> Done</label>' +
+          '<label class="phase__check-label"><input type="checkbox" class="phase__check" data-phase="' + esc(def.id) + '"' + (done ? ' checked' : '') + '> ' + T('ph.done','Done') + '</label>' +
         '</div>' +
       '</div>' +
       '<p class="phase__focus">' + esc(def.focus) + '</p>' +
-      (opts.prevName ? '<p class="phase__prereq"><span aria-hidden="true">↳</span> Builds on: <strong>' + esc(opts.prevName) + '</strong></p>' : '') +
+      (opts.prevName ? '<p class="phase__prereq"><span aria-hidden="true">↳</span> ' + T('ph.builds','Builds on:') + ' <strong>' + esc(opts.prevName) + '</strong></p>' : '') +
       '<div class="phase__grid">' +
-        '<div class="phase__block"><h4>What you’ll learn</h4><ul class="phase__list">' +
+        '<div class="phase__block"><h4>' + T('ph.learn','What you’ll learn') + '</h4><ul class="phase__list">' +
           def.skills.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') +
         '</ul></div>' +
-        '<div class="phase__block"><h4>' + (showPaid ? 'Resources' : 'Free resources') + '</h4>' +
+        '<div class="phase__block"><h4>' + (showPaid ? T('ph.res','Resources') : T('ph.resFree','Free resources')) + '</h4>' +
           (resources.length
             ? '<ul class="phase__list res-list">' + resourceList(resources) + '</ul>'
             : '<p class="phase__focus">' + emptyMsg + '</p>') +
         '</div>' +
       '</div>' +
-      (certs.length ? '<div class="certs-box"><h4>Target certification(s)</h4><ul class="cert-list">' +
+      (certs.length ? '<div class="certs-box"><h4>' + T('ph.certs','Target certification(s)') + '</h4><ul class="cert-list">' +
         certs.map(certRow).join('') + '</ul></div>' : '') +
       '</article>';
   }
@@ -676,7 +699,7 @@
       var secondName = DATA.TRACKS[second.track] ? DATA.TRACKS[second.track].name : second.track;
       html += ' It’s close, though — your answers also fit <strong>' + esc(secondName) + '</strong> (' + second.confidencePct + '%). Worth sampling both before you commit.';
     }
-    html += ' Not feeling it? Use <strong>Edit answers</strong> to pick a track directly.';
+    html += ' Not feeling it? Use the <strong>Track</strong> dropdown below to switch directly.';
     // a compact confidence bar for the top 3
     var bars = r.ranked.slice(0, 3).map(function (x) {
       var nm = DATA.TRACKS[x.track] ? DATA.TRACKS[x.track].short : x.track;
@@ -733,7 +756,7 @@
       return '<li class="bridge"><span class="bridge__to"><span aria-hidden="true">⇄</span> ' + esc(t.name) + '</span>' +
         '<span class="bridge__why">' + esc(b.why) + '</span></li>';
     }).join('');
-    return '<h2 style="margin-top:var(--sp-6)">Where this path can take you next</h2>' +
+    return '<h2 style="margin-top:var(--sp-6)">' + T('plan.bridges','Where this path can take you next') + '</h2>' +
       '<p class="step__help">Cybersecurity is a network, not a ladder. These are the accurate pivots from your track — the skills genuinely overlap.</p>' +
       '<ul class="bridges">' + items + '</ul>';
   }
@@ -746,13 +769,13 @@
     function links(arr) {
       return arr.map(function (x) { return '<li><a href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(x.name) + NEW_TAB + '</a></li>'; }).join('');
     }
-    return '<h2 style="margin-top:var(--sp-6)">Community &amp; getting hired</h2>' +
-      '<div class="callout"><strong>Demand: ' + esc(t.demand || 'High') + '.</strong> ' + esc(H.salaryNote) +
+    return '<h2 style="margin-top:var(--sp-6)">' + T('plan.hiring','Community &amp; getting hired') + '</h2>' +
+      '<div class="callout"><strong>' + T('plan.demand', 'Demand') + ': ' + esc(t.demand || 'High') + '.</strong> ' + esc(H.salaryNote) +
         ' <a href="' + esc(H.salarySource.url) + '" target="_blank" rel="noopener noreferrer">' + esc(H.salarySource.name) + NEW_TAB + '</a></div>' +
       '<div class="hiring">' +
-        '<div class="hiring__col"><h4>Communities</h4><ul class="phase__list res-list">' + links(comms) + '</ul></div>' +
-        '<div class="hiring__col"><h4>Job boards</h4><ul class="phase__list res-list">' + links(H.jobBoards) + '</ul></div>' +
-        '<div class="hiring__col"><h4>Interview prep</h4><ul class="phase__list res-list">' + links(H.interview) + '</ul></div>' +
+        '<div class="hiring__col"><h4>' + T('plan.communities','Communities') + '</h4><ul class="phase__list res-list">' + links(comms) + '</ul></div>' +
+        '<div class="hiring__col"><h4>' + T('plan.jobs','Job boards') + '</h4><ul class="phase__list res-list">' + links(H.jobBoards) + '</ul></div>' +
+        '<div class="hiring__col"><h4>' + T('plan.interview','Interview prep') + '</h4><ul class="phase__list res-list">' + links(H.interview) + '</ul></div>' +
       '</div>';
   }
 
@@ -768,14 +791,30 @@
     return '<div class="callout"><strong>Full path.</strong> You’ll see the strongest options including paid labs and premium certifications. Spend deliberately — free resources are still the best place to build fundamentals first.</div>';
   }
 
-  var TWEAKS = [{ id: 'hours', label: 'Time' }, { id: 'budget', label: 'Budget' }, { id: 'appetite', label: 'Goal' }];
-  function tweakBar(a) {
-    return '<form class="tweaks" aria-label="Adjust and regenerate"><span class="tweaks__lead">Tweak &amp; regenerate:</span>' +
+  // The tweak toolbar now covers EVERY choice (Track included), so it replaces the old
+  // "Edit answers" button: change any answer here and the plan regenerates in place.
+  var TWEAKS = [
+    { id: 'goal', label: 'Track' }, { id: 'experience', label: 'Level' },
+    { id: 'hours', label: 'Time' }, { id: 'deadline', label: 'Target' },
+    { id: 'budget', label: 'Budget' }, { id: 'style', label: 'Style' },
+    { id: 'appetite', label: 'Depth' }
+  ];
+  function tweakOptions(id, a, trackKey) {
+    if (id === 'goal') { // list the six real tracks (no "unsure" here — Start over to re-explore)
+      var cur = a.goal !== 'unsure' ? a.goal : trackKey;
+      return Object.keys(DATA.TRACKS).map(function (k) {
+        return '<option value="' + esc(k) + '"' + (cur === k ? ' selected' : '') + '>' + esc(DATA.TRACKS[k].short) + '</option>';
+      }).join('');
+    }
+    var q = QUESTIONS.filter(function (x) { return x.id === id; })[0];
+    return q.options.map(function (o) {
+      return '<option value="' + esc(o.value) + '"' + (String(a[id]) === o.value ? ' selected' : '') + '>' + esc((LABELS[id] && LABELS[id][o.value]) || o.label || o.value) + '</option>';
+    }).join('');
+  }
+  function tweakBar(a, trackKey) {
+    return '<form class="tweaks" aria-label="Adjust your plan and regenerate"><span class="tweaks__lead">' + T('plan.adjust','Adjust your plan') + '</span>' +
       TWEAKS.map(function (t) {
-        var opts = QUESTIONS.filter(function (q) { return q.id === t.id; })[0].options.map(function (o) {
-          return '<option value="' + esc(o.value) + '"' + (String(a[t.id]) === o.value ? ' selected' : '') + '>' + esc(LABELS[t.id][o.value] || o.value) + '</option>';
-        }).join('');
-        return '<label class="tweak"><span class="tweak__k">' + esc(t.label) + '</span><select data-tweak="' + esc(t.id) + '">' + opts + '</select></label>';
+        return '<label class="tweak"><span class="tweak__k">' + esc(T('tw.' + t.label, t.label)) + '</span><select data-tweak="' + esc(t.id) + '">' + tweakOptions(t.id, a, trackKey) + '</select></label>';
       }).join('') + '</form>';
   }
 
@@ -798,19 +837,19 @@
     if (a.deadline && a.deadline !== '0') chipData.splice(3, 0, ['Target', LABELS.deadline[a.deadline] || a.deadline]);
     if (!plan.isExplore && plan.track && plan.track.demand) chipData.push(['Demand', plan.track.demand]);
     var chips = chipData.map(function (c) {
-      return '<span class="chip" data-k="' + esc(c[0]) + '">' + esc(c[0]) + ': <strong>' + esc(c[1]) + '</strong></span>';
+      return '<span class="chip" data-k="' + esc(c[0]) + '">' + esc(T('chip.' + c[0], c[0])) + ': <strong>' + esc(c[1]) + '</strong></span>';
     }).join('');
 
     var certCount = plan.ladder.length;
-    var jobLabel = plan.isExplore ? 'to explore & choose'
-      : a.appetite === 'hobby' ? 'of focused learning'
-      : 'estimated to job-ready';
+    var jobLabel = plan.isExplore ? T('st.explore','to explore & choose')
+      : a.appetite === 'hobby' ? T('st.hobby','of focused learning')
+      : T('st.jobready','estimated to job-ready');
     var totalHours = Math.max(10, Math.round(plan.totalWeeks * plan.hours / 10) * 10);
     var stats = [
       [fmtTotal(plan.months), jobLabel, true],
-      [String(plan.phases.length), plan.phases.length === 1 ? 'phase' : 'phases', false],
-      ['~' + totalHours + 'h', 'total study time', false],
-      [certCount ? String(certCount) : '—', certCount ? 'certifications mapped' : 'skills-first (no certs)', false],
+      [String(plan.phases.length), plan.phases.length === 1 ? T('st.phase','phase') : T('st.phases','phases'), false],
+      ['~' + totalHours + 'h', T('st.hours','total study time'), false],
+      [certCount ? String(certCount) : '—', certCount ? T('st.certsMapped','certifications mapped') : T('st.skillsFirst','skills-first (no certs)'), false],
     ].map(function (s) {
       return '<div class="stat' + (s[2] ? ' stat--lead' : '') + '"><div class="stat__num">' + esc(s[0]) + '</div><div class="stat__label">' + esc(s[1]) + '</div></div>';
     }).join('');
@@ -821,16 +860,16 @@
 
     var ladderHtml = '';
     if (plan.ladder.length) {
-      ladderHtml = '<h2 style="margin-top:var(--sp-6)">Your certification ladder</h2>' +
+      ladderHtml = '<h2 style="margin-top:var(--sp-6)">' + T('plan.ladder','Your certification ladder') + '</h2>' +
         '<p class="step__help">Work up this ladder in order. Tiers show relative cost, not exact price — always verify current fees.</p>' +
         costLine +
         '<ul class="cert-list cert-list--ladder">' + plan.ladder.map(certRow).join('') + '</ul>';
     } else if (!plan.isExplore) {
-      ladderHtml = '<div class="callout" style="margin-top:var(--sp-6)"><strong>Skills first.</strong> You chose a hobby/interest goal, so this plan skips the certification grind. If you later want a job, use “Edit answers” and pick “Land my first security job”.</div>';
+      ladderHtml = '<div class="callout" style="margin-top:var(--sp-6)"><strong>Skills first.</strong> You chose a hobby/interest goal, so this plan skips the certification grind. If you later want a job, set the <strong>Depth</strong> dropdown to “Land my first security job”.</div>';
     }
 
     var roleHtml = roles.length
-      ? '<p class="plan-head__sub"><strong>Roles this path leads to:</strong> ' + esc(roles.join(' · ')) + '</p>'
+      ? '<p class="plan-head__sub"><strong>' + T('plan.roles','Roles this path leads to:') + '</strong> ' + esc(roles.join(' · ')) + '</p>'
       : '';
 
     var shown = {}; // de-dup certs across phase boxes within this plan
@@ -839,7 +878,7 @@
     els.result.innerHTML =
       '<div class="result__inner">' +
         '<div class="plan-head">' +
-          '<p class="plan-head__eyebrow" id="result-eyebrow">Your CYBERPATH roadmap</p>' +
+          '<p class="plan-head__eyebrow" id="result-eyebrow">' + T('plan.eyebrow','Your CYBERPATH roadmap') + '</p>' +
           '<h1 class="plan-head__title" id="result-heading" tabindex="-1" aria-describedby="result-eyebrow">' + esc(trackName) + '</h1>' +
           '<p class="plan-head__sub">' + esc(tagline) + '</p>' +
           roleHtml +
@@ -849,20 +888,19 @@
         matchCallout(plan) +
 
         '<div class="plan-actions">' +
-          '<button type="button" class="btn btn--primary" id="print-btn">' + icon('download') + ' Download as PDF</button>' +
-          '<button type="button" class="btn btn--ghost" id="md-btn">' + icon('file') + ' Markdown</button>' +
-          '<button type="button" class="btn btn--ghost" id="copy-btn" aria-label="Copy a shareable link to this roadmap">' + icon('link') + ' Copy link</button>' +
-          '<button type="button" class="btn btn--ghost" id="edit-btn">' + icon('edit') + ' Edit answers</button>' +
-          '<button type="button" class="btn btn--outline" id="restart-btn">' + icon('rotate') + ' Start over</button>' +
+          '<button type="button" class="btn btn--primary" id="print-btn">' + icon('download') + ' ' + T('plan.download','Download as PDF') + '</button>' +
+          '<button type="button" class="btn btn--ghost" id="md-btn">' + icon('file') + ' ' + T('plan.md','Markdown') + '</button>' +
+          '<button type="button" class="btn btn--ghost" id="copy-btn" aria-label="Copy a shareable link to this roadmap">' + icon('link') + ' ' + T('plan.copy','Copy link') + '</button>' +
+          '<button type="button" class="btn btn--outline" id="restart-btn">' + icon('rotate') + ' ' + T('plan.restart','Start over') + '</button>' +
           '<span class="visually-hidden" id="plan-status" role="status" aria-live="polite"></span>' +
         '</div>' +
 
         '<div class="plan-progress" id="plan-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Roadmap completion">' +
           '<div class="plan-progress__track"><span class="plan-progress__fill" id="plan-progress-fill"></span></div>' +
-          '<p class="plan-progress__text" id="plan-progress-text">Tick phases off as you finish them — your progress is saved on this device.</p>' +
+          '<p class="plan-progress__text" id="plan-progress-text">' + T('plan.progressHint','Tick phases off as you finish them — your progress is saved on this device.') + '</p>' +
         '</div>' +
 
-        (plan.isExplore ? '' : tweakBar(a)) +
+        (plan.isExplore ? '' : tweakBar(a, plan.trackKey)) +
 
         '<div class="plan-summary">' + stats + '</div>' +
 
@@ -870,17 +908,17 @@
         budgetCallout(a.budget) +
         '<div class="callout callout--study"><strong>How to study this (' + esc(LABELS.style[a.style] || 'your way') + '):</strong> ' + esc(STYLE_TIPS[a.style] || STYLE_TIPS.balanced) + '</div>' +
 
-        (plan.isExplore ? '' :
-          '<h2 style="margin-top:var(--sp-6)">Your path network</h2>' +
-          '<p class="step__help">The map of your journey — foundations feed your track, your specialisation branches into optional lanes, and flag markers call out the milestones that prove real progress.</p>' +
-          tierLegend(plan.phases) +
-          pathNetwork(plan)) +
-
-        '<h2 style="margin-top:var(--sp-6)">Your step-by-step plan</h2>' +
+        '<h2 style="margin-top:var(--sp-6)">' + T('plan.steps','Your step-by-step plan') + '</h2>' +
         '<p class="step__help">Timeframes assume about ' + esc(LABELS.hours[a.hours] || (plan.hours + 'h/week')) + ' and adjust to your experience — roughly <strong>~' + totalHours + ' hours</strong> of study in total. Life happens: treat them as a compass, not a deadline.</p>' +
         '<div class="timeline">' +
           plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, progress: progress, prevName: i > 0 ? plan.phases[i - 1].def.name : null }); }).join('') +
         '</div>' +
+
+        (plan.isExplore ? '' :
+          '<h2 style="margin-top:var(--sp-6)">' + T('plan.network','Your path network') + '</h2>' +
+          '<p class="step__help">The same journey as a network — foundations feed your track, your specialisation branches into optional lanes, and flag markers call out the milestones that prove real progress.</p>' +
+          tierLegend(plan.phases) +
+          pathNetwork(plan)) +
 
         bridgesSection(plan) +
 
@@ -919,7 +957,7 @@
       var flash = function () {
         setStatus('Link copied to clipboard.');
         var original = copyBtn.innerHTML;
-        copyBtn.innerHTML = icon('check') + ' Copied!';
+        copyBtn.innerHTML = icon('check') + ' ' + T('plan.copied','Copied!');
         setTimeout(function () { copyBtn.innerHTML = original; }, 1600);
       };
       var fallback = function () {
@@ -934,8 +972,6 @@
         navigator.clipboard.writeText(url).then(flash, fallback);
       } else { fallback(); }
     });
-
-    byId('edit-btn').addEventListener('click', editAnswers);
 
     var mdBtn = byId('md-btn');
     if (mdBtn) mdBtn.addEventListener('click', function () { downloadMarkdown(planRef, trackName); });
@@ -965,7 +1001,7 @@
     var total = boxes.length, pct = Math.round((done / total) * 100);
     var fill = byId('plan-progress-fill'); if (fill) fill.style.width = pct + '%';
     var txt = byId('plan-progress-text');
-    if (txt) txt.textContent = done + ' of ' + total + ' phases complete (' + pct + '%)';
+    if (txt) txt.textContent = done + ' ' + T('plan.complete.a','of') + ' ' + total + ' ' + T('plan.complete.b','phases complete') + ' (' + pct + '%)';
     var wrap = byId('plan-progress'); if (wrap) wrap.setAttribute('aria-valuenow', String(pct));
   }
 
@@ -1057,6 +1093,14 @@
   // on GitHub Pages project sites). Makes the footer's "works offline" claim true.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+
+  // Re-render on language switch so dynamic (JS-built) strings pick up the new language.
+  if (window.CYBERPATH_I18N) {
+    window.CYBERPATH_I18N.onChange(function () {
+      if (els.result && !els.result.hidden) generate(false, { keepView: true });
+      else if (els.wizard && !els.wizard.hidden) showStep(stepIndex, false);
+    });
   }
 
   /* ----------------------------------------------------------------
