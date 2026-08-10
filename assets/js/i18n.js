@@ -75,6 +75,116 @@
     'faq.a5': 'لا. CYBERPATH مُخطِّط مستقل ومجاني، يربط بهذي المنصّات كمصادر تعلّم بس، ومو مدعوم أو تابع لأي وحدة منها.',
     'faq.q6': 'تجمعون بياناتي؟',
     'faq.a6': 'لا. ماكو تتبّع ولا حساب ولا خادم. إجاباتك تبقى بمتصفّحك (وبرابط المشاركة إذا نسخته)، وتقدّمك محفوظ على جهازك بس.',
+    // pricing / tiers / demand
+    'price.free': 'مجانًا', 'price.low': '≈ 100–300$ · 130–390 ألف د.ع',
+    'price.mid': '≈ 300–800$ · 390 ألف–1.05 مليون د.ع', 'price.high': '≈ +800$ · +1.05 مليون د.ع',
+    'plan.costEst': 'رسوم الامتحانات التقديرية لهذا السُّلّم',
+    'plan.costNote': 'نطاق تقريبي من الفئات، مو سعر نهائي. دائمًا تأكّد من الأسعار الحالية.',
+    'plan.exploreTitle': 'استكشف واختر مسارك', 'plan.studyPrefix': 'شلون تدرس هذا',
+    'demand.Very high': 'عالي جدًا', 'demand.High': 'عالي',
+    'tierlabel.foundation': 'الأساس', 'tierlabel.core': 'المهارات الأساسية', 'tierlabel.specialization': 'التخصّص',
+    'tierlabel.certification': 'الشهادة', 'tierlabel.career': 'انطلاق مهني',
+    // tracks
+    'trk.offensive.name': 'الأمن الهجومي / اختبار الاختراق', 'trk.offensive.tag': 'اخترق بأخلاق. لاكِ الثغرات قبل المهاجمين.', 'trk.offensive.roles': 'مختبِر اختراق · فريق أحمر · صائد مكافآت الثغرات · مستشار أمني',
+    'trk.defensive.name': 'الأمن الدفاعي / الفريق الأزرق', 'trk.defensive.tag': 'اكتشف، استجب، واصطاد. كون السبب اللي يفشّل الهجوم.', 'trk.defensive.roles': 'محلل SOC · مستجيب حوادث · صائد تهديدات · مهندس كشف',
+    'trk.grc.name': 'الحوكمة والمخاطر والامتثال (GRC)', 'trk.grc.tag': 'الأمن كوظيفة عمل: سياسات ومخاطر وتدقيق وأُطُر.', 'trk.grc.roles': 'محلل GRC · مدقّق تقنية معلومات · محلل مخاطر · مدير امتثال',
+    'trk.cloud.name': 'أمن السحابة', 'trk.cloud.tag': 'أمّن المنصّات اللي يشتغل عليها كلشي: AWS وAzure وGCP.', 'trk.cloud.roles': 'مهندس أمن سحابة · محلل أمن سحابة · مهندس DevSecOps',
+    'trk.appsec.name': 'أمن التطبيقات / DevSecOps', 'trk.appsec.tag': 'أمّن الكود والـpipeline. وين يلتقي المطوّرين بالأمن.', 'trk.appsec.roles': 'مهندس أمن تطبيقات · مهندس DevSecOps · صائد مكافآت الثغرات',
+    'trk.dfir.name': 'التحقيق الجنائي الرقمي والاستجابة (DFIR)', 'trk.dfir.tag': 'اتبع الأدلة. أعِد بناء الهجوم، قرص قرص، سجل سجل.', 'trk.dfir.roles': 'محلل أدلة جنائية رقمية · مستجيب حوادث · محلل برمجيات خبيثة',
+    // phase names
+    'ph.net.name': 'أساسيات الشبكات', 'ph.linux.name': 'لينكس وسطر الأوامر', 'ph.fund.name': 'أساسيات الأمن', 'ph.prog.name': 'البرمجة بـPython',
+    'ph.off-core.name': 'أساس الهجوم: الاستطلاع وهجمات الويب والشبكة', 'ph.off-spec.name': 'الاستغلال وActive Directory', 'ph.off-cert.name': 'سباق الشهادة', 'ph.off-career.name': 'المعرض والتقارير والبحث عن وظيفة',
+    'ph.def-core.name': 'أساس الفريق الأزرق: السجلات وSIEM والكشف', 'ph.def-spec.name': 'الاستجابة للحوادث وصيد التهديدات', 'ph.def-cert.name': 'الشهادة', 'ph.def-career.name': 'مختبر SOC منزلي والبحث عن وظيفة',
+    'ph.grc-core.name': 'الحوكمة والمخاطر والأُطُر', 'ph.grc-spec.name': 'التدقيق والامتثال وإدارة المخاطر', 'ph.grc-cert.name': 'الشهادة', 'ph.grc-career.name': 'معرض الوثائق والبحث عن وظيفة',
+    'ph.cloud-core.name': 'أساسيات السحابة (AWS / Azure)', 'ph.cloud-spec.name': 'أمن السحابة وتقوية IAM', 'ph.cloud-cert.name': 'الشهادة', 'ph.cloud-career.name': 'مختبر سحابي والبحث عن وظيفة',
+    'ph.appsec-core.name': 'أساسيات أمن الويب (OWASP Top 10)', 'ph.appsec-spec.name': 'الكود الآمن وDevSecOps', 'ph.appsec-cert.name': 'الشهادة', 'ph.appsec-career.name': 'صيد المكافآت والمعرض',
+    'ph.dfir-core.name': 'أساسيات الأدلة الجنائية (القرص، الذاكرة، السجلات)', 'ph.dfir-spec.name': 'الاستجابة للحوادث وفرز البرمجيات الخبيثة', 'ph.dfir-cert.name': 'الشهادة', 'ph.dfir-career.name': 'معرض القضايا والبحث عن وظيفة',
+    'ph.explore.name': 'جرّب كل مسار، وبعدين اختر',
+    // milestones
+    'ms.Home lab built': 'بنيت مختبر منزلي', 'ms.Home lab built.b': 'مضيّف أجهزة وهمية + هدف مصاب + جهاز مهاجم بلينكس — ساحة تدريبك الدائمة.',
+    'ms.First box rooted': 'أول جهاز مخترَق (root)', 'ms.First box rooted.b': 'اخترق جهاز من الاستطلاع للـroot بدون walkthrough.',
+    'ms.First pentest report': 'أول تقرير اختبار اختراق', 'ms.First pentest report.b': 'تقرير احترافي: النتائج وتصنيف المخاطر والمعالجة.',
+    'ms.First alert triaged': 'أول تنبيه تم فرزه', 'ms.First alert triaged.b': 'خُذ تنبيه SIEM من السجل الخام إلى حكم إيجابي/سلبي.',
+    'ms.First incident handled': 'أول حادث تمت معالجته', 'ms.First incident handled.b': 'مرّر تنبيه عبر دورة الاستجابة الكاملة (NIST) حتى الاحتواء.',
+    'ms.First case solved': 'أول قضية تم حلها', 'ms.First case solved.b': 'أعِد بناء خط زمني لهجوم من القرص/الذاكرة ودافع عنه كتابةً.',
+    'ms.First audit completed': 'أول تدقيق مكتمل', 'ms.First audit completed.b': 'اربط الضوابط بإطار وأنتج نتيجة تدقيق مدعومة بالأدلة.',
+    'ms.First secured deployment': 'أول نشر مؤمَّن', 'ms.First secured deployment.b': 'انشر نشرة مرجعية مقوّاة (IaC) مع تسجيل وتنبيهات.',
+    'ms.First CVE / disclosure': 'أول CVE / إفصاح', 'ms.First CVE / disclosure.b': 'تقرير مكافأة ثغرات صالح ضمن النطاق أو CVE مُفصح عنه بمسؤولية.',
+    'ms.First write-up published': 'أول كتابة منشورة', 'ms.First write-up published.b': 'منشور عام يثبت طريقة تفكيرك، مو بس شنو سويت.',
+    // budget callouts
+    'bud.free': '<strong>المسار المجاني.</strong> كل مرحلة فوك تعرض مصادر بلا تكلفة تكدر تبدي بيها هسّه. أغلب الشهادات بعدها تاخذ رسوم امتحان — الخيار المجاني الأوضح هو ISC2 Certified in Cybersecurity (CC). تكدر تبني مهارة حقيقية بدون ما تدفع؛ اعتبر الشهادات المدفوعة استثمار لاحق اختياري.',
+    'bud.mixed': '<strong>المسار المتوازن.</strong> تعلّم على المنصّات المجانية، وبعدين اصرف وين يفرق: شهادة أو اثنتين معروفة يبحث عنها المسؤولين عن التوظيف.',
+    'bud.paid': '<strong>المسار الكامل.</strong> راح تشوف أقوى الخيارات بضمنها المختبرات والشهادات المدفوعة. اصرف بحكمة — المصادر المجانية بعدها أفضل مكان تبني بيه الأساسيات أول.',
+    // study tips
+    'tip.hands': 'إنت تتعلّم بالممارسة، فعيش بالمختبرات: لكل مفهوم، مباشرة اخترق أو دافع عن شي. ابدأ بالمنصّات العملية بكل مرحلة (TryHackMe وHack The Box وPortSwigger وCyberDefenders) وما تقرا النظرية إلا لمن توكف بمشكلة.',
+    'tip.structured': 'إنت أحسن مع مسار موجَّه، فاربط كل مرحلة بكورس واحد منظّم وخلّصه قبل ما تنتقل. استخدم مصادر الفيديو/الكورسات كعمود فقري والمختبرات لترسيخ كل وحدة.',
+    'tip.reading': 'إنت تفضّل القراءة، فابنِ كل مرحلة حول الوثائق والكتب المذكورة، وبعدين أثبت فهمك بمختبر أو اثنين. احتفظ بدفتر مكتوب — الشرح لنفسك أسرع طريقة للتغذية الراجعة.',
+    'tip.balanced': 'إنت تحب التنوّع، فبدّل: شوف أو اقرا حتى تفهم الموضوع، وبعدها مباشرة طبّقه بمختبر، وبعدين اكتب ملاحظة قصيرة. حلقة (شوف ← سوِّ ← اشرح) هي أضمن طريقة لتثبيت مهارات الأمن.',
+
+    // wizard questions (legends + help + option labels; main descs)
+    'q.goal.legend': 'أي مجال بالأمن السيبراني يشدّك أكثر؟',
+    'q.goal.help': 'اختر الشغل اللي يبيّن أكثر إثارة إلك. مو متأكد؟ اختر آخر خيار وإحنا نساعدك تستكشف.',
+    'q.goal.opt.offensive': 'الاختراق (هجومي / اختبار اختراق)', 'q.goal.opt.offensive.d': 'قرصنة أخلاقية، فريق أحمر، إيجاد الثغرات.',
+    'q.goal.opt.defensive': 'الدفاع (فريق أزرق / SOC)', 'q.goal.opt.defensive.d': 'كشف الهجمات، الاستجابة للحوادث، صيد التهديدات.',
+    'q.goal.opt.grc': 'الحوكمة والمخاطر (GRC)', 'q.goal.opt.grc.d': 'سياسات، تدقيق، امتثال، إدارة مخاطر.',
+    'q.goal.opt.cloud': 'أمن السحابة', 'q.goal.opt.cloud.d': 'تأمين بيئات AWS وAzure وGCP.',
+    'q.goal.opt.appsec': 'أمن التطبيقات', 'q.goal.opt.appsec.d': 'تأمين الكود وتطبيقات الويب والـCI/CD.',
+    'q.goal.opt.dfir': 'الأدلة الجنائية والاستجابة (DFIR)', 'q.goal.opt.dfir.d': 'التحقيق بالاختراقات والأدلة والبرمجيات الخبيثة.',
+    'q.goal.opt.unsure': 'لسّه مو متأكد', 'q.goal.opt.unsure.d': 'جاوب على شوية أسئلة استعداد وإحنا نلاكيلك المسار.',
+    'q.experience.legend': 'منين بادي اليوم؟',
+    'q.experience.help': 'كون صادق — هذا يحدّد شكد أساسيات نضيف وشكد بسرعة تمشي الخطة.',
+    'q.experience.opt.none': 'مبتدئ تمامًا', 'q.experience.opt.none.d': 'جديد على التقنية والأمن.',
+    'q.experience.opt.it': 'خلفية تقنية بسيطة', 'q.experience.opt.it.d': 'مرتاح بالحاسبات، يمكن دعم فني أو برمجة.',
+    'q.experience.opt.some-sec': 'شوية خبرة أمنية', 'q.experience.opt.some-sec.d': 'سويت كورس أو CTF أو شوية أمن بالشغل.',
+    'q.experience.opt.pro': 'أشتغل بالتقنية/الأمن', 'q.experience.opt.pro.d': 'أحوّل مساري أو أطوّر نفسي بالمجال.',
+    'q.background.legend': 'أي وحدة من هذي تعرفها أصلاً؟ (اختر أي شي)',
+    'q.background.help': 'راح نتخطّى الأساسيات اللي تعرفها حتى ما تطول الخطة. اختياري — إذا ماكو شي ينطبق، بس اضغط التالي.',
+    'q.background.opt.networking': 'الشبكات', 'q.background.opt.networking.d': 'TCP/IP، DNS، subnetting.',
+    'q.background.opt.linux': 'لينكس / سطر الأوامر', 'q.background.opt.linux.d': 'مرتاح بالطرفية.',
+    'q.background.opt.programming': 'البرمجة / السكربتات', 'q.background.opt.programming.d': 'Python أو شبهه.',
+    'q.background.opt.sysadmin': 'إدارة الأنظمة', 'q.background.opt.sysadmin.d': 'إدارة أنظمة ويندوز/لينكس.',
+    'q.hours.legend': 'شكد وقت تكدر تدرس بالأسبوع بشكل واقعي؟',
+    'q.hours.help': 'الاستمرارية أهم من الكثافة. اختر اللي تكدر تلتزم بيه فعلاً.',
+    'q.hours.opt.3': 'شوية ساعات (1–5س)', 'q.hours.opt.3.d': 'مسيات/عطل بين الالتزامات.',
+    'q.hours.opt.8': 'دوام جزئي (5–10س)', 'q.hours.opt.8.d': 'إيقاع أسبوعي ثابت.',
+    'q.hours.opt.15': 'جدّي (10–20س)', 'q.hours.opt.15.d': 'الدراسة أولوية كبيرة.',
+    'q.hours.opt.25': 'دوام كامل (+20س)', 'q.hours.opt.25.d': 'هاي تركيزك الأساسي هسّه.',
+    'q.deadline.legend': 'عندك تاريخ مستهدف حتى تصير جاهز للوظيفة؟',
+    'q.deadline.help': 'راح نتحقّق من خطتك مقابله ونكلك إذا ساعاتك بالأسبوع تكفي.',
+    'q.deadline.opt.3': 'خلال 3 أشهر', 'q.deadline.opt.3.d': 'طموح — عادةً يحتاج دراسة بدوام كامل.',
+    'q.deadline.opt.6': 'خلال 6 أشهر', 'q.deadline.opt.6.d': 'مركّز ومكثّف.',
+    'q.deadline.opt.12': 'خلال سنة', 'q.deadline.opt.12.d': 'إيقاع ثابت ومستدام.',
+    'q.deadline.opt.0': 'بلا موعد محدّد', 'q.deadline.opt.0.d': 'أمشي على راحتي.',
+    'q.budget.legend': 'شكد ميزانيتك للتعلّم والشهادات؟',
+    'q.budget.help': 'تكدر تبني مهارات حقيقية بلا صرف؛ الشهادات هي وين عادةً يروح الفلوس.',
+    'q.budget.opt.free': 'مجاني بس', 'q.budget.opt.free.d': 'ورّيني أفضل مسار بلا تكلفة.',
+    'q.budget.opt.mixed': 'أغلبه مجاني، وشوية صرف', 'q.budget.opt.mixed.d': 'تعلّم مجاني، وادفع للشهادات المهمة.',
+    'q.budget.opt.paid': 'أكدر أستثمر', 'q.budget.opt.paid.d': 'ورّيني أفضل الخيارات، بضمنها المدفوعة.',
+    'q.style.legend': 'شلون تتعلّم أحسن؟',
+    'q.style.help': 'راح نظبّط طريقة الدراسة وأي نوع مصادر نبدأ بيها.',
+    'q.style.opt.hands': 'مختبرات وتحدّيات عملية', 'q.style.opt.hands.d': 'تعلّم بالممارسة — CTF، أجهزة، تكسير الأشياء.',
+    'q.style.opt.structured': 'كورسات وفيديو منظّمة', 'q.style.opt.structured.d': 'مناهج موجّهة خطوة بخطوة.',
+    'q.style.opt.reading': 'قراءة ووثائق', 'q.style.opt.reading.d': 'كتب ووثائق وكتابات على راحتي.',
+    'q.style.opt.balanced': 'مزيج من كلشي', 'q.style.opt.balanced.d': 'أخلط مختبرات وفيديو وقراءة.',
+    'q.appetite.legend': 'شنو هدفك من هذا المسار؟',
+    'q.appetite.help': 'هذا يحدّد لوين يوصل سُلّم الشهادات بخطتك.',
+    'q.appetite.opt.hobby': 'أتعلّم للاهتمام / هواية', 'q.appetite.opt.hobby.d': 'المهارات أهم من الشهادات.',
+    'q.appetite.opt.entry': 'أحصل على أول وظيفة أمنية', 'q.appetite.opt.entry.d': 'مدخلي + شهادة أساسية قوية وحدة.',
+    'q.appetite.opt.advanced': 'أتقدّم / أتخصّص بعمق', 'q.appetite.opt.advanced.d': 'روح للنهاية لشهادات الخبراء.',
+    'q.apt_drive.legend': 'أي جزء من دورة حياة الأمن راح تكون أسعد بيه؟',
+    'q.apt_drive.opt.break': 'إيجاد طريق الدخول', 'q.apt_drive.opt.watch': 'ضبط الهجمات وهي تصير', 'q.apt_drive.opt.build': 'بناء أنظمة تقاوم', 'q.apt_drive.opt.investigate': 'إعادة بناء اللي صار', 'q.apt_drive.opt.govern': 'وضع القواعد',
+    'q.apt_mindset.legend': 'أي وحدة تشبه طريقة تفكير عقلك فعلاً؟',
+    'q.apt_mindset.opt.adversarial': 'أدوّر على الخلل', 'q.apt_mindset.opt.layered': 'أفكّر بالدفاعات', 'q.apt_mindset.opt.evidence': 'أتبع الأدلة', 'q.apt_mindset.opt.systems': 'أشوف الأنظمة كلها', 'q.apt_mindset.opt.rules': 'أفكّر بالقواعد',
+    'q.apt_medium.legend': 'أي حرفة تحب تتقنها أكثر؟',
+    'q.apt_medium.opt.code': 'الكود والـdebugger', 'q.apt_medium.opt.exploit': 'أدوات الاستغلال والـshells', 'q.apt_medium.opt.cloudiac': 'واجهات السحابة والـIaC', 'q.apt_medium.opt.siem': 'SIEM ولغة استعلامه', 'q.apt_medium.opt.forensics': 'أدلة القرص والذاكرة', 'q.apt_medium.opt.frameworks': 'أُطُر المخاطر والضوابط',
+    'q.apt_social.legend': 'وين تشتغل أحسن؟',
+    'q.apt_social.opt.solo': 'لحالي وبتركيز', 'q.apt_social.opt.ops-team': 'بفريق متفاعل ومتماسك', 'q.apt_social.opt.with-devs': 'جنب المطوّرين', 'q.apt_social.opt.stakeholders': 'ويا جهة العمل',
+    'q.apt_report.legend': 'بصدق، شلون تشعر تجاه كتابة التقارير؟',
+    'q.apt_report.opt.energizes': 'أستمتع بيها', 'q.apt_report.opt.professional': 'جزء من الشغل', 'q.apt_report.opt.minimal': 'خلّيني عملي',
+
+    // step-by-step help sentence
+    'plan.hint1': 'المدد تفترض حوالي', 'plan.hint2': 'وتتأقلم مع خبرتك — تقريبًا',
+    'plan.hoursWord': 'ساعة', 'plan.hint3': 'دراسة إجمالًا. الحياة تصير: اعتبرها بوصلة مو موعد نهائي.',
     // build loader
     'load.ready': 'الخارطة جاهزة.'
   };
@@ -132,13 +242,13 @@
     var target = lang === 'ar' ? 'ENGLISH' : 'ﺗﺮﺟﻤﺔ';
     var chars = '01ﷲabcdefﺣﺮﻮﻒﺏﺕﻥ<>#$%&*+=/\\|';
     ov.hidden = false; requestAnimationFrame(function () { ov.classList.add('is-on'); });
-    var ticks = 0, maxTicks = 11;
+    var ticks = 0, maxTicks = 13;
     var iv = setInterval(function () {
       ticks++;
       var rows = [];
-      for (var r = 0; r < 9; r++) {
+      for (var r = 0; r < 30; r++) {
         var s = '';
-        for (var c = 0; c < 48; c++) s += chars[(Math.floor((ticks * 7 + r * 13 + c * 3) % chars.length))];
+        for (var c = 0; c < 130; c++) s += chars[(Math.floor((ticks * 7 + r * 13 + c * 3) % chars.length))];
         rows.push(s);
       }
       rain.textContent = rows.join('\n');

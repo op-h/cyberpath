@@ -118,9 +118,9 @@
       var certs = t.phases.reduce(function (acc, p) { return acc.concat(p.certs || []); }, [])
         .concat(t.advancedCerts || []);
       var certNames = certs.map(function (c) { return c.name; }).slice(0, 5).join(' → ');
-      return '<article class="static-card"><h3>' + esc(t.name) + '</h3>' +
-        '<p>' + esc(t.tagline) + '</p>' +
-        '<p><strong>Roles:</strong> ' + esc(t.roles.join(', ')) + '</p>' +
+      return '<article class="static-card"><h3>' + esc(T('trk.' + key + '.name', t.name)) + '</h3>' +
+        '<p>' + esc(T('trk.' + key + '.tag', t.tagline)) + '</p>' +
+        '<p><strong>Roles:</strong> ' + esc(T('trk.' + key + '.roles', t.roles.join(', '))) + '</p>' +
         (certNames ? '<p><strong>Certs:</strong> ' + esc(certNames) + '</p>' : '') +
         '</article>';
     }).join('');
@@ -157,27 +157,39 @@
   els.stepTotal.textContent = QUESTIONS.length;
   els.progress.setAttribute('aria-valuemax', String(QUESTIONS.length));
 
-  // Build all steps once
-  els.steps.innerHTML = QUESTIONS.map(function (q, i) {
-    var opts = q.options.map(function (o) {
-      var type = q.type === 'checkbox' ? 'checkbox' : 'radio';
-      var name = q.type === 'checkbox' ? q.id + '[]' : q.id;
-      var id = q.id + '-' + o.value;
-      return '<label class="option" for="' + id + '">' +
-        '<input type="' + type + '" name="' + esc(name) + '" id="' + esc(id) + '" value="' + esc(o.value) + '">' +
-        '<span class="option__body">' +
-          '<span class="option__label">' + esc(o.label) + '</span>' +
-          '<span class="option__desc">' + esc(o.desc) + '</span>' +
-        '</span></label>';
+  // Build all steps (re-runnable so a language switch re-renders the wizard).
+  var stepEls;
+  function buildSteps() {
+    els.steps.innerHTML = QUESTIONS.map(function (q, i) {
+      var opts = q.options.map(function (o) {
+        var type = q.type === 'checkbox' ? 'checkbox' : 'radio';
+        var name = q.type === 'checkbox' ? q.id + '[]' : q.id;
+        var id = q.id + '-' + o.value;
+        return '<label class="option" for="' + id + '">' +
+          '<input type="' + type + '" name="' + esc(name) + '" id="' + esc(id) + '" value="' + esc(o.value) + '">' +
+          '<span class="option__body">' +
+            '<span class="option__label">' + esc(T('q.' + q.id + '.opt.' + o.value, o.label)) + '</span>' +
+            '<span class="option__desc">' + esc(T('q.' + q.id + '.opt.' + o.value + '.d', o.desc)) + '</span>' +
+          '</span></label>';
+      }).join('');
+      return '<fieldset class="step" data-step="' + i + '" data-type="' + q.type + '"' + (i === 0 ? '' : ' hidden') + '>' +
+        '<legend class="step__legend" tabindex="-1">' + esc(T('q.' + q.id + '.legend', q.legend)) + '</legend>' +
+        '<p class="step__help">' + esc(T('q.' + q.id + '.help', q.help)) + '</p>' +
+        '<div class="options">' + opts + '</div>' +
+        '</fieldset>';
     }).join('');
-    return '<fieldset class="step" data-step="' + i + '" data-type="' + q.type + '"' + (i === 0 ? '' : ' hidden') + '>' +
-      '<legend class="step__legend" tabindex="-1">' + esc(q.legend) + '</legend>' +
-      '<p class="step__help">' + esc(q.help) + '</p>' +
-      '<div class="options">' + opts + '</div>' +
-      '</fieldset>';
-  }).join('');
+    stepEls = Array.prototype.slice.call(els.steps.querySelectorAll('.step'));
+  }
+  buildSteps();
 
-  var stepEls = Array.prototype.slice.call(els.steps.querySelectorAll('.step'));
+  // Re-apply the learner's answers to inputs (after a rebuild clears them).
+  function restoreChecks() {
+    QUESTIONS.forEach(function (q) {
+      var v = answers[q.id];
+      if (q.type === 'checkbox') (Array.isArray(v) ? v : []).forEach(function (x) { var el = byId(q.id + '-' + x); if (el) el.checked = true; });
+      else { var el = byId(q.id + '-' + v); if (el) el.checked = true; }
+    });
+  }
 
   function showView(view) {
     // Single source of truth for which of hero / wizard / result is on screen.
@@ -576,6 +588,8 @@
     return lo + '–' + hi + ' months';
   }
 
+  function fmtIQD(n) { return n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'm' : Math.round(n / 1000) + 'k'; }
+
   var NEW_TAB = '<span class="visually-hidden"> (opens in a new tab)</span>';
 
   function resourceList(items) {
@@ -585,7 +599,13 @@
     }).join('');
   }
 
-  var TIER_PRICE = { free: 'Free', low: '≈ $100–300', mid: '≈ $300–800', high: '$800+' };
+  // Shown in both USD and Iraqi Dinar (≈ 1$ = 1,310 IQD; rough — verify current rate).
+  var TIER_PRICE = {
+    free: 'Free',
+    low: '≈ $100–300 · 130k–390k IQD',
+    mid: '≈ $300–800 · 390k–1.05m IQD',
+    high: '≈ $800+ · 1.05m+ IQD'
+  };
   function certRow(c) {
     var t = c.tier;
     return '<li class="cert">' +
@@ -593,7 +613,7 @@
       (c.optional
         ? '<span class="cert__lvl">optional</span>'
         : (c.level ? '<span class="cert__lvl">' + esc(c.level) + '</span>' : '')) +
-      '<span class="cert__price">' + esc(TIER_PRICE[t.key] || '') + '</span>' +
+      '<span class="cert__price">' + esc(T('price.' + t.key, TIER_PRICE[t.key] || '')) + '</span>' +
       '<span class="tier" data-tier="' + esc(t.key) + '" aria-label="Cost tier: ' + esc(t.label) + ' — ' + esc(t.hint) + '">' + esc(t.label) + '</span>' +
       '</li>';
   }
@@ -621,8 +641,8 @@
     return '<article class="phase" data-tier="' + esc(def.tier) + '">' +
       '<div class="phase__top">' +
         '<div><span class="phase__idx">' + T('ph.phase','PHASE') + ' ' + (idx + 1) + '</span> ' +
-          '<span class="phase__badge">' + esc(tierLabel) + '</span>' +
-          '<h3 class="phase__name">' + esc(def.name) + '</h3></div>' +
+          '<span class="phase__badge">' + esc(T('tierlabel.' + def.tier, tierLabel)) + '</span>' +
+          '<h3 class="phase__name">' + esc(T('ph.' + def.id + '.name', def.name)) + '</h3></div>' +
         '<div class="phase__meta">' +
           '<span class="phase__dur">' + esc(fmtDuration(p.weeks)) + '</span>' +
           '<label class="phase__check-label"><input type="checkbox" class="phase__check" data-phase="' + esc(def.id) + '"' + (done ? ' checked' : '') + '> ' + T('ph.done','Done') + '</label>' +
@@ -713,6 +733,8 @@
 
   // The path-network map: phases as tier-coloured nodes, with optional branch stubs and
   // milestone markers injected after the phase that earns them. A visual summary of the plan.
+  // A real network: phase/branch/milestone nodes as neuron chips that WRAP into a 2-D
+  // web, with SVG synapse edges (drawn after layout by drawNetwork()).
   function pathNetwork(plan) {
     if (plan.isExplore) return '';
     var MS = DATA.MILESTONES || [];
@@ -721,28 +743,48 @@
     plan.phases.forEach(function (p, i) {
       var def = p.def;
       var tierLabel = { foundation: 'Foundation', core: 'Core', specialization: 'Specialisation', certification: 'Certification', career: 'Career' }[def.tier] || def.tier;
-      var branches = (def.branches || []).map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('');
-      nodes += '<li class="pathnet__node" data-tier="' + esc(def.tier) + '">' +
-        '<span class="pathnet__dot" aria-hidden="true"></span>' +
-        '<span class="pathnet__idx">' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</span>' +
-        '<span class="pathnet__name">' + esc(def.name) + '</span>' +
-        '<span class="pathnet__tier">' + esc(tierLabel) + '</span>' +
-        (branches ? '<ul class="pathnet__branches" aria-label="Optional side-specialisations">' + branches + '</ul>' : '') +
-        '</li>';
-      // milestones anchored to this tier for this track (once each)
+      nodes += '<li class="pnetx__node" data-tier="' + esc(def.tier) + '">' +
+        '<span class="pnetx__dot" aria-hidden="true"></span>' +
+        '<span class="pnetx__body"><span class="pnetx__idx">' + (i + 1 < 10 ? '0' : '') + (i + 1) + '</span>' +
+        '<span class="pnetx__name">' + esc(T('ph.' + def.id + '.name', def.name)) + '</span>' +
+        '<span class="pnetx__tier">' + esc(T('tierlabel.' + def.tier, tierLabel)) + '</span></span></li>';
+      // optional branch neurons off the specialisation
+      (def.branches || []).forEach(function (b) {
+        nodes += '<li class="pnetx__node pnetx__node--branch" data-tier="' + esc(def.tier) + '">' +
+          '<span class="pnetx__dot" aria-hidden="true"></span>' +
+          '<span class="pnetx__body"><span class="pnetx__name">' + esc(b) + '</span></span></li>';
+      });
+      // milestone neurons
       MS.forEach(function (m, mi) {
         if (seenMs[mi]) return;
         if ((m.track === '*' || m.track === plan.trackKey) && m.tier === def.tier) {
           seenMs[mi] = 1;
-          nodes += '<li class="pathnet__node pathnet__node--ms" data-kind="milestone">' +
-            '<span class="pathnet__dot" aria-hidden="true"></span>' +
-            '<span class="pathnet__name pathnet__name--ms"><span class="visually-hidden">Milestone: </span>' + icon('flag') + ' ' + esc(m.name) + '</span>' +
-            '<span class="pathnet__ms-blurb">' + esc(m.blurb) + '</span>' +
-            '</li>';
+          nodes += '<li class="pnetx__node pnetx__node--ms" data-kind="milestone">' +
+            '<span class="pnetx__dot" aria-hidden="true"></span>' +
+            '<span class="pnetx__body"><span class="pnetx__name"><span class="visually-hidden">Milestone: </span>' + icon('flag') + ' ' + esc(T('ms.' + m.name, m.name)) + '</span></span></li>';
         }
       });
     });
-    return '<nav class="pathnet" aria-label="Path network overview"><ol class="pathnet__spine" role="list">' + nodes + '</ol></nav>';
+    return '<nav class="pnetx" aria-label="Path network overview"><svg class="pnetx__edges" aria-hidden="true" focusable="false"></svg><ol class="pnetx__nodes" role="list">' + nodes + '</ol></nav>';
+  }
+
+  // Draw curved synapse edges between neuron centres (sequential + skip-one web edges).
+  function drawNetwork() {
+    var nav = els.result && els.result.querySelector('.pnetx'); if (!nav) return;
+    var svg = nav.querySelector('.pnetx__edges'); if (!svg) return;
+    var W = nav.clientWidth, H = nav.clientHeight; if (!W || !H) return;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var nb = nav.getBoundingClientRect(), pts = [];
+    Array.prototype.forEach.call(nav.querySelectorAll('.pnetx__node .pnetx__dot'), function (d) {
+      var r = d.getBoundingClientRect();
+      pts.push({ x: r.left - nb.left + r.width / 2, y: r.top - nb.top + r.height / 2 });
+    });
+    if (pts.length < 2) { svg.innerHTML = ''; return; }
+    function curve(a, b) { var mx = (a.x + b.x) / 2; return 'M' + a.x + ' ' + a.y + 'C' + mx + ' ' + a.y + ' ' + mx + ' ' + b.y + ' ' + b.x + ' ' + b.y; }
+    var seq = '', web = '';
+    for (var i = 0; i < pts.length - 1; i++) seq += curve(pts[i], pts[i + 1]);
+    for (var j = 0; j < pts.length - 2; j++) web += curve(pts[j], pts[j + 2]);
+    svg.innerHTML = '<path class="pnetx-edge pnetx-edge--web" d="' + web + '"/><path class="pnetx-edge" d="' + seq + '"/>';
   }
 
   // "Where this path can take you next" — accurate cross-track pivots.
@@ -770,7 +812,7 @@
       return arr.map(function (x) { return '<li><a href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer">' + esc(x.name) + NEW_TAB + '</a></li>'; }).join('');
     }
     return '<h2 style="margin-top:var(--sp-6)">' + T('plan.hiring','Community &amp; getting hired') + '</h2>' +
-      '<div class="callout"><strong>' + T('plan.demand', 'Demand') + ': ' + esc(t.demand || 'High') + '.</strong> ' + esc(H.salaryNote) +
+      '<div class="callout"><strong>' + T('plan.demand', 'Demand') + ': ' + esc(T('demand.' + (t.demand || 'High'), t.demand || 'High')) + '.</strong> ' + esc(H.salaryNote) +
         ' <a href="' + esc(H.salarySource.url) + '" target="_blank" rel="noopener noreferrer">' + esc(H.salarySource.name) + NEW_TAB + '</a></div>' +
       '<div class="hiring">' +
         '<div class="hiring__col"><h4>' + T('plan.communities','Communities') + '</h4><ul class="phase__list res-list">' + links(comms) + '</ul></div>' +
@@ -780,15 +822,12 @@
   }
 
   function budgetCallout(budget) {
-    if (budget === 'free') {
-      return '<div class="callout"><strong>Free path.</strong> Every phase above lists no-cost resources you can start today. ' +
-        'Most certifications still charge an exam fee — the clearest genuinely-free option is <strong>ISC2 Certified in Cybersecurity (CC)</strong>. ' +
-        'You can build real, hireable skill without paying; treat paid certs as an optional later investment.</div>';
-    }
-    if (budget === 'mixed') {
-      return '<div class="callout"><strong>Balanced path.</strong> Learn on free platforms, then spend where it counts: one or two recognised certifications that hiring managers actually search for.</div>';
-    }
-    return '<div class="callout"><strong>Full path.</strong> You’ll see the strongest options including paid labs and premium certifications. Spend deliberately — free resources are still the best place to build fundamentals first.</div>';
+    var EN = {
+      free: '<strong>Free path.</strong> Every phase above lists no-cost resources you can start today. Most certifications still charge an exam fee — the clearest genuinely-free option is <strong>ISC2 Certified in Cybersecurity (CC)</strong>. You can build real, hireable skill without paying; treat paid certs as an optional later investment.',
+      mixed: '<strong>Balanced path.</strong> Learn on free platforms, then spend where it counts: one or two recognised certifications that hiring managers actually search for.',
+      paid: '<strong>Full path.</strong> You’ll see the strongest options including paid labs and premium certifications. Spend deliberately — free resources are still the best place to build fundamentals first.'
+    };
+    return '<div class="callout">' + T('bud.' + budget, EN[budget] || EN.mixed) + '</div>';
   }
 
   // The tweak toolbar now covers EVERY choice (Track included), so it replaces the old
@@ -812,19 +851,22 @@
     }).join('');
   }
   function tweakBar(a, trackKey) {
-    return '<form class="tweaks" aria-label="Adjust your plan and regenerate"><span class="tweaks__lead">' + T('plan.adjust','Adjust your plan') + '</span>' +
+    return '<details class="tweaks-wrap">' +
+      '<summary class="tweaks-summary">' + icon('edit') + ' <span>' + T('plan.adjust','Adjust your plan') + '</span></summary>' +
+      '<form class="tweaks" aria-label="Adjust your plan and regenerate">' +
       TWEAKS.map(function (t) {
         return '<label class="tweak"><span class="tweak__k">' + esc(T('tw.' + t.label, t.label)) + '</span><select data-tweak="' + esc(t.id) + '">' + tweakOptions(t.id, a, trackKey) + '</select></label>';
-      }).join('') + '</form>';
+      }).join('') +
+      '</form></details>';
   }
 
   function renderPlan(plan, opts) {
     opts = opts || {};
     var a = plan.answers;
-    var trackName = plan.isExplore ? 'Explore & Choose Your Path' : plan.track.name;
+    var trackName = plan.isExplore ? T('plan.exploreTitle','Explore & Choose Your Path') : T('trk.' + plan.trackKey + '.name', plan.track.name);
     var tagline = plan.isExplore
       ? 'You’re not sure yet — and that’s fine. This plan builds your foundations, then guides you through sampling every track so you can commit with confidence.'
-      : plan.track.tagline;
+      : T('trk.' + plan.trackKey + '.tag', plan.track.tagline);
     var roles = plan.isExplore ? [] : plan.track.roles;
 
     var chipData = [
@@ -855,7 +897,9 @@
     }).join('');
 
     var costLine = (!plan.isExplore && plan.ladder.length && a.budget !== 'free' && plan.costHi > 0)
-      ? '<p class="step__help">Estimated exam fees for this ladder: <strong>~$' + plan.costLo + '–$' + plan.costHi + '</strong> — a rough band from the tiers, not a quote. Always verify current prices.</p>'
+      ? '<p class="step__help">' + T('plan.costEst', 'Estimated exam fees for this ladder') + ': <strong>~$' + plan.costLo + '–$' + plan.costHi +
+        ' · ' + fmtIQD(plan.costLo * 1310) + '–' + fmtIQD(plan.costHi * 1310) + ' IQD</strong> — ' +
+        T('plan.costNote', 'a rough band from the tiers, not a quote. Always verify current prices.') + '</p>'
       : '';
 
     var ladderHtml = '';
@@ -869,7 +913,7 @@
     }
 
     var roleHtml = roles.length
-      ? '<p class="plan-head__sub"><strong>' + T('plan.roles','Roles this path leads to:') + '</strong> ' + esc(roles.join(' · ')) + '</p>'
+      ? '<p class="plan-head__sub"><strong>' + T('plan.roles','Roles this path leads to:') + '</strong> ' + esc(T('trk.' + plan.trackKey + '.roles', roles.join(' · '))) + '</p>'
       : '';
 
     var shown = {}; // de-dup certs across phase boxes within this plan
@@ -906,10 +950,10 @@
 
         deadlineCheck(plan) +
         budgetCallout(a.budget) +
-        '<div class="callout callout--study"><strong>How to study this (' + esc(LABELS.style[a.style] || 'your way') + '):</strong> ' + esc(STYLE_TIPS[a.style] || STYLE_TIPS.balanced) + '</div>' +
+        '<div class="callout callout--study"><strong>' + T('plan.studyPrefix', 'How to study this') + ' (' + esc(T('q.style.opt.' + a.style, LABELS.style[a.style] || 'your way')) + '):</strong> ' + esc(T('tip.' + a.style, STYLE_TIPS[a.style] || STYLE_TIPS.balanced)) + '</div>' +
 
         '<h2 style="margin-top:var(--sp-6)">' + T('plan.steps','Your step-by-step plan') + '</h2>' +
-        '<p class="step__help">Timeframes assume about ' + esc(LABELS.hours[a.hours] || (plan.hours + 'h/week')) + ' and adjust to your experience — roughly <strong>~' + totalHours + ' hours</strong> of study in total. Life happens: treat them as a compass, not a deadline.</p>' +
+        '<p class="step__help">' + T('plan.hint1', 'Timeframes assume about') + ' ' + esc(LABELS.hours[a.hours] || (plan.hours + 'h/week')) + ' ' + T('plan.hint2', 'and adjust to your experience — roughly') + ' <strong>~' + totalHours + ' ' + T('plan.hoursWord', 'hours') + '</strong> ' + T('plan.hint3', 'of study in total. Life happens: treat them as a compass, not a deadline.') + '</p>' +
         '<div class="timeline">' +
           plan.phases.map(function (p, i) { return renderPhase(p, i, { budget: a.budget, style: a.style, appetite: a.appetite, shown: shown, progress: progress, prevName: i > 0 ? plan.phases[i - 1].def.name : null }); }).join('') +
         '</div>' +
@@ -941,6 +985,7 @@
     }
 
     wirePlanActions(plan, trackName);
+    if (!plan.isExplore) requestAnimationFrame(function () { requestAnimationFrame(drawNetwork); });
   }
 
   function setStatus(msg) { var s = byId('plan-status'); if (s) s.textContent = msg; }
@@ -1089,6 +1134,9 @@
     if ((location.hash || '').indexOf('#plan=') === 0) restoreFromHash();
   });
 
+  // Redraw the network edges when the layout reflows.
+  var rT; window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(drawNetwork, 150); });
+
   // Offline / installable: register the service worker (relative path → correct scope
   // on GitHub Pages project sites). Makes the footer's "works offline" claim true.
   if ('serviceWorker' in navigator) {
@@ -1098,6 +1146,7 @@
   // Re-render on language switch so dynamic (JS-built) strings pick up the new language.
   if (window.CYBERPATH_I18N) {
     window.CYBERPATH_I18N.onChange(function () {
+      buildSteps(); restoreChecks();                          // re-render wizard in the new language
       if (els.result && !els.result.hidden) generate(false, { keepView: true });
       else if (els.wizard && !els.wizard.hidden) showStep(stepIndex, false);
     });
