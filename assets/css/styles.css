@@ -830,6 +830,9 @@
   [dir="rtl"] .cert__price, [dir="rtl"] .match__bars li,
   [dir="rtl"] .hero__stats strong, [dir="rtl"] .stat__num, [dir="rtl"] .lang-glitch__rain { direction: ltr; }
   [dir="rtl"] .hero__stats li, [dir="rtl"] .stat, [dir="rtl"] .cert__lvl { text-align: start; }
+  /* The number keeps LTR content order, but must align to the RTL start (right) so it lines
+     up with its Arabic label underneath — otherwise digits sit left, label sits right. */
+  [dir="rtl"] .stat__num, [dir="rtl"] .hero__stats strong { text-align: right; }
   [dir="rtl"] .tweak select { background-position: left .7rem center; }
 }
 
