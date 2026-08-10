@@ -507,7 +507,9 @@
   .stat:hover { border-color: var(--border-strong); }
   .plan-summary > .stat--lead { grid-column: span 2; }
   .plan-summary > .stat--lead::before { background: var(--accent); opacity: 1; height: 3px; }
-  .plan-summary > .stat--lead .stat__num { font-size: clamp(1.7rem, 8cqi, 2.4rem); line-height: 1.05; text-wrap: balance; }
+  /* direction:ltr keeps the range as "4–5" not "5–4"; text-wrap:balance is deliberately
+     omitted here — on mixed Arabic+digit content it can reorder the bidi run. */
+  .plan-summary > .stat--lead .stat__num { font-size: clamp(1.7rem, 8cqi, 2.4rem); line-height: 1.05; direction: ltr; }
   @media (max-width: 460px) { .plan-summary > .stat--lead { grid-column: auto; } }
 
   /* Timeline colour key. */

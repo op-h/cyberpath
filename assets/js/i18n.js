@@ -78,8 +78,9 @@
     'faq.q6': 'تجمعون بياناتي؟',
     'faq.a6': 'لا. ماكو تتبّع ولا حساب ولا خادم. إجاباتك تبقى بمتصفّحك (وبرابط المشاركة إذا نسخته)، وتقدّمك محفوظ على جهازك بس.',
     // pricing / tiers / demand
-    'price.free': 'مجانًا', 'price.low': '≈ $100–300 · 130–390 ألف د.ع',
-    'price.mid': '≈ $300–800 · 0.39–1.05 مليون د.ع', 'price.high': '≈ $800+ · 1.05 مليون د.ع فأكثر',
+    // Prices kept in English (USD + IQD) in both languages — cleaner and unambiguous.
+    'price.free': 'مجانًا', 'price.low': '≈ $100–300 · 130k–390k IQD',
+    'price.mid': '≈ $300–800 · 390k–1.05m IQD', 'price.high': '≈ $800+ · 1.05m+ IQD',
     'plan.costEst': 'رسوم الامتحانات التقديرية لهذا السُّلّم',
     'plan.costNote': 'نطاق تقريبي من الفئات، مو سعر نهائي. دائمًا تأكّد من الأسعار الحالية.',
     'plan.exploreTitle': 'استكشف واختر مسارك', 'plan.studyPrefix': 'شلون تدرس هذا',
@@ -194,7 +195,7 @@
 
     // duration/time units
     'unit.week': ' أسبوع', 'unit.weeks': ' أسابيع', 'unit.month': ' شهر', 'unit.months': ' أشهر',
-    'unit.wks': ' أسبوع', 'unit.h': 'ساعة', 'unit.iqd': 'د.ع',
+    'unit.wks': ' أسبوع', 'unit.h': 'ساعة', 'unit.iqd': 'IQD',
 
     // deadline verdict (fragments concatenated around dynamic numbers)
     'dl.ok.head': 'على المسار الصحيح.',

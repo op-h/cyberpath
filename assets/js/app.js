@@ -574,10 +574,11 @@
 
   function uWeek(n) { return n === 1 ? T('unit.week', ' week') : T('unit.weeks', ' weeks'); }
   function uMonth(n) { return n === 1 ? T('unit.month', ' month') : T('unit.months', ' months'); }
-  // Numbers, ranges ("6–8") and interleaved number/unit runs ("10 أسبوع · ~2 أشهر") render
-  // correctly when left as PLAIN strings in their natural context — Latin digits keep their
-  // LTR order inside Arabic text automatically. Forcing direction or adding bidi isolates
-  // is what scrambles them, so we deliberately do neither here.
+  // Interleaved number/unit runs ("10 أسبوع · ~2 أشهر") render correctly ONLY as plain
+  // strings in the natural RTL flow, so fmtDuration stays plain. A lone number/range, though,
+  // can flip in RTL (single-digit "4–5" → "5–4"), so lri() wraps a SINGLE numeric token in a
+  // Left-to-Right Isolate — safe because there is no unit word inside to cross-scramble.
+  function lri(n) { return (document.documentElement.dir === 'rtl') ? '⁦' + n + '⁩' : String(n); }
   function fmtDuration(weeks) {
     if (weeks < 4) return weeks + uWeek(weeks);
     var mo = weeks / WEEKS_PER_MONTH;
@@ -588,12 +589,12 @@
     // Very short plans read better in weeks; guarantee a sane, non-inverted range.
     if (months < 1.4) {
       var wk = Math.max(1, Math.round(months * WEEKS_PER_MONTH));
-      return '~' + wk + uWeek(wk);
+      return lri('~' + wk) + uWeek(wk);
     }
     var lo = Math.max(1, Math.round(months * 0.9));
     var hi = Math.max(lo, Math.round(months * 1.15));
-    if (lo === hi) return '~' + lo + uMonth(lo);
-    return lo + '–' + hi + T('unit.months', ' months');
+    if (lo === hi) return lri('~' + lo) + uMonth(lo);
+    return lri(lo + '–' + hi) + T('unit.months', ' months');
   }
 
   function fmtIQD(n) { return n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'm' : Math.round(n / 1000) + 'k'; }
