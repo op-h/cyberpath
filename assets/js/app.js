@@ -79,8 +79,8 @@
     if (!toggle) return; // theming still works via the attribute; just no button to sync
     var isLight = t === 'light';
     toggle.setAttribute('aria-pressed', String(isLight));
-    toggle.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
-    $('.theme-toggle__label', toggle).textContent = isLight ? 'Light' : 'Dark';
+    toggle.setAttribute('aria-label', isLight ? T('nav.toDark', 'Switch to dark theme') : T('nav.toLight', 'Switch to light theme'));
+    $('.theme-toggle__label', toggle).textContent = isLight ? T('nav.light', 'Light') : T('nav.dark', 'Dark');
     $('.theme-toggle__icon', toggle).innerHTML = isLight ? icon('sun') : icon('moon');
   }
   try {
@@ -574,26 +574,26 @@
 
   function uWeek(n) { return n === 1 ? T('unit.week', ' week') : T('unit.weeks', ' weeks'); }
   function uMonth(n) { return n === 1 ? T('unit.month', ' month') : T('unit.months', ' months'); }
-  // In RTL a "<number> <arabic-unit>" run next to another such run reorders confusingly
-  // (the second number leaks onto the first unit). Wrap each run in an RTL isolate so the
-  // digits stay glued to their own word. No-op in LTR.
-  function iso(s) { return (document.documentElement.dir === 'rtl') ? '⁧' + s + '⁩' : s; }
+  // Numbers, ranges ("6–8") and interleaved number/unit runs ("10 أسبوع · ~2 أشهر") render
+  // correctly when left as PLAIN strings in their natural context — Latin digits keep their
+  // LTR order inside Arabic text automatically. Forcing direction or adding bidi isolates
+  // is what scrambles them, so we deliberately do neither here.
   function fmtDuration(weeks) {
-    if (weeks < 4) return iso(weeks + uWeek(weeks));
+    if (weeks < 4) return weeks + uWeek(weeks);
     var mo = weeks / WEEKS_PER_MONTH;
     var moTxt = mo < 1.5 ? '~1' + T('unit.month', ' month') : '~' + Math.round(mo) + T('unit.months', ' months');
-    return iso(weeks + T('unit.wks', ' wks')) + ' · ' + iso(moTxt);
+    return weeks + T('unit.wks', ' wks') + ' · ' + moTxt;
   }
   function fmtTotal(months) {
     // Very short plans read better in weeks; guarantee a sane, non-inverted range.
     if (months < 1.4) {
       var wk = Math.max(1, Math.round(months * WEEKS_PER_MONTH));
-      return iso('~' + wk + uWeek(wk));
+      return '~' + wk + uWeek(wk);
     }
     var lo = Math.max(1, Math.round(months * 0.9));
     var hi = Math.max(lo, Math.round(months * 1.15));
-    if (lo === hi) return iso('~' + lo + uMonth(lo));
-    return iso(lo + '–' + hi + T('unit.months', ' months'));
+    if (lo === hi) return '~' + lo + uMonth(lo);
+    return lo + '–' + hi + T('unit.months', ' months');
   }
 
   function fmtIQD(n) { return n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'm' : Math.round(n / 1000) + 'k'; }
@@ -621,7 +621,7 @@
       (c.optional
         ? '<span class="cert__lvl">' + tr('optional') + '</span>'
         : (c.level ? '<span class="cert__lvl">' + esc(tr(c.level)) + '</span>' : '')) +
-      '<span class="cert__price">' + esc(T('price.' + t.key, TIER_PRICE[t.key] || '')) + '</span>' +
+      '<span class="cert__price" dir="ltr">' + esc(T('price.' + t.key, TIER_PRICE[t.key] || '')) + '</span>' +
       '<span class="tier" data-tier="' + esc(t.key) + '" aria-label="Cost tier: ' + esc(t.label) + ' — ' + esc(t.hint) + '">' + esc(t.label) + '</span>' +
       '</li>';
   }
@@ -897,15 +897,15 @@
     var stats = [
       [fmtTotal(plan.months), jobLabel, true],
       [String(plan.phases.length), plan.phases.length === 1 ? T('st.phase','phase') : T('st.phases','phases'), false],
-      ['~' + totalHours + ' ' + T('unit.h','h'), T('st.hours','total study time'), false],
+      ['~' + totalHours + '\u00a0' + T('unit.h','h'), T('st.hours','total study time'), false],
       [certCount ? String(certCount) : '—', certCount ? T('st.certsMapped','certifications mapped') : T('st.skillsFirst','skills-first (no certs)'), false],
     ].map(function (s) {
       return '<div class="stat' + (s[2] ? ' stat--lead' : '') + '"><div class="stat__num">' + esc(s[0]) + '</div><div class="stat__label">' + esc(s[1]) + '</div></div>';
     }).join('');
 
     var costLine = (!plan.isExplore && plan.ladder.length && a.budget !== 'free' && plan.costHi > 0)
-      ? '<p class="step__help">' + T('plan.costEst', 'Estimated exam fees for this ladder') + ': <strong>~$' + plan.costLo + '–$' + plan.costHi +
-        ' · ' + fmtIQD(plan.costLo * 1310) + '–' + fmtIQD(plan.costHi * 1310) + ' IQD</strong> — ' +
+      ? '<p class="step__help">' + T('plan.costEst', 'Estimated exam fees for this ladder') + ': <strong dir="ltr">~$' + plan.costLo + '–$' + plan.costHi +
+        ' · ' + fmtIQD(plan.costLo * 1310) + '–' + fmtIQD(plan.costHi * 1310) + ' ' + T('unit.iqd', 'IQD') + '</strong> — ' +
         T('plan.costNote', 'a rough band from the tiers, not a quote. Always verify current prices.') + '</p>'
       : '';
 
@@ -1152,6 +1152,7 @@
   // Re-render on language switch so dynamic (JS-built) strings pick up the new language.
   if (window.CYBERPATH_I18N) {
     window.CYBERPATH_I18N.onChange(function () {
+      applyTheme(currentTheme());                             // re-label the theme toggle in the new language (theme itself is untouched)
       buildSteps(); restoreChecks();                          // re-render wizard in the new language
       if (els.result && !els.result.hidden) generate(false, { keepView: true });
       else if (els.wizard && !els.wizard.hidden) showStep(stepIndex, false);

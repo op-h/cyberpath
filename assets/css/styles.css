@@ -821,9 +821,11 @@
   .lang-glitch__label { position: relative; font-family: var(--font-mono); font-weight: 800; letter-spacing: .14em;
     font-size: clamp(2.2rem, 11vw, 5rem); color: var(--accent); text-shadow: 0 0 26px color-mix(in oklab, var(--accent) 60%, transparent); }
 
-  /* RTL: keep code / data / latin runs left-to-right for readability */
+  /* RTL: keep code / data / latin runs left-to-right for readability.
+     NOTE: .phase__dur is intentionally NOT here — its interleaved "10 أسبوع · ~2 أشهر"
+     only orders correctly in the natural RTL flow; forcing ltr scrambles it. */
   [dir="rtl"] .term__body, [dir="rtl"] .build-log, [dir="rtl"] .pathnet__idx,
-  [dir="rtl"] .phase__dur, [dir="rtl"] .cert__price, [dir="rtl"] .match__bars li,
+  [dir="rtl"] .cert__price, [dir="rtl"] .match__bars li,
   [dir="rtl"] .hero__stats strong, [dir="rtl"] .stat__num, [dir="rtl"] .lang-glitch__rain { direction: ltr; }
   [dir="rtl"] .hero__stats li, [dir="rtl"] .stat, [dir="rtl"] .cert__lvl { text-align: start; }
   [dir="rtl"] .tweak select { background-position: left .7rem center; }

@@ -18,6 +18,8 @@
     // header / controls
     'nav.theme': 'الثيم', 'nav.lang': 'العربية', 'nav.lang.other': 'English',
     'nav.skip': 'روح للمحتوى',
+    'nav.dark': 'داكن', 'nav.light': 'فاتح',
+    'nav.toDark': 'حوّل للثيم الداكن', 'nav.toLight': 'حوّل للثيم الفاتح',
     // hero
     'hero.eyebrow': 'طريقك للأمن السيبراني، مرسوم إلك',
     'hero.title.a': 'بطّل تخمين.', 'hero.title.b': 'خلّي عندك ', 'hero.title.c': 'خارطة حقيقية.',
@@ -76,8 +78,8 @@
     'faq.q6': 'تجمعون بياناتي؟',
     'faq.a6': 'لا. ماكو تتبّع ولا حساب ولا خادم. إجاباتك تبقى بمتصفّحك (وبرابط المشاركة إذا نسخته)، وتقدّمك محفوظ على جهازك بس.',
     // pricing / tiers / demand
-    'price.free': 'مجانًا', 'price.low': '≈ 100–300$ · 130–390 ألف د.ع',
-    'price.mid': '≈ 300–800$ · 390 ألف–1.05 مليون د.ع', 'price.high': '≈ +800$ · +1.05 مليون د.ع',
+    'price.free': 'مجانًا', 'price.low': '≈ $100–300 · 130–390 ألف د.ع',
+    'price.mid': '≈ $300–800 · 0.39–1.05 مليون د.ع', 'price.high': '≈ $800+ · 1.05 مليون د.ع فأكثر',
     'plan.costEst': 'رسوم الامتحانات التقديرية لهذا السُّلّم',
     'plan.costNote': 'نطاق تقريبي من الفئات، مو سعر نهائي. دائمًا تأكّد من الأسعار الحالية.',
     'plan.exploreTitle': 'استكشف واختر مسارك', 'plan.studyPrefix': 'شلون تدرس هذا',
@@ -192,7 +194,7 @@
 
     // duration/time units
     'unit.week': ' أسبوع', 'unit.weeks': ' أسابيع', 'unit.month': ' شهر', 'unit.months': ' أشهر',
-    'unit.wks': ' أسبوع', 'unit.h': 'ساعة',
+    'unit.wks': ' أسبوع', 'unit.h': 'ساعة', 'unit.iqd': 'د.ع',
 
     // deadline verdict (fragments concatenated around dynamic numbers)
     'dl.ok.head': 'على المسار الصحيح.',
@@ -268,13 +270,17 @@
     var finalWord = lang === 'ar' ? 'ENGLISH' : 'العربية';
     var chars = '01ABCDEF#%&*<>/\\|=+-01';
     ov.hidden = false; requestAnimationFrame(function () { ov.classList.add('is-on'); });
+    // Size the matrix rain to the actual viewport so it fills the whole screen on any
+    // display (phone to 2560px), not a fixed block. ~9.2px per mono glyph, ~19px per line.
+    var COLS = Math.ceil(window.innerWidth / 9.2) + 2;
+    var ROWS = Math.ceil(window.innerHeight / 19) + 2;
     var ticks = 0, maxTicks = 14;
     var iv = setInterval(function () {
       ticks++;
       var rows = [];
-      for (var r = 0; r < 30; r++) {
+      for (var r = 0; r < ROWS; r++) {
         var s = '';
-        for (var c = 0; c < 130; c++) s += chars[(ticks * 7 + r * 13 + c * 3) % chars.length];
+        for (var c = 0; c < COLS; c++) s += chars[(ticks * 7 + r * 13 + c * 3) % chars.length];
         rows.push(s);
       }
       rain.textContent = rows.join('\n');
