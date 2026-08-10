@@ -816,6 +816,12 @@
 /* ---------- v5: i18n (glitch toggle, RTL) ---------- */
 @layer components {
   .header-controls { display: flex; align-items: center; gap: var(--sp-2); }
+  /* Below ~360px the brand + two labelled toggles overflow. Drop to icon-only toggles
+     (aria-labels keep them accessible; icons stay a 44px tap target). */
+  @media (max-width: 360px) {
+    .header-controls .theme-toggle__label { display: none; }
+    .header-controls .theme-toggle { min-width: 44px; justify-content: center; gap: 0; padding-inline: .6rem; }
+  }
 
   /* "Hacker" language-switch glitch */
   .lang-glitch { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; overflow: hidden;

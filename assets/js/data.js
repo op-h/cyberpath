@@ -162,7 +162,7 @@ const TRACKS = {
         ],
         certs: [
           { name: 'eLearnSecurity eJPT (INE)', tier: TIER.LOW, level: 'entry', url: 'https://security.ine.com/certifications/ejpt-certification/' },
-          { name: 'HTB CPTS', tier: TIER.MID, level: 'core', url: 'https://www.hackthebox.com/hacker/certifications' },
+          { name: 'HTB CPTS', tier: TIER.MID, level: 'core', url: 'https://academy.hackthebox.com/preview/certifications/htb-certified-penetration-testing-specialist' },
           { name: 'TCM PNPT', tier: TIER.MID, level: 'core', url: 'https://certifications.tcm-sec.com/pnpt/' },
           { name: 'OffSec OSCP', tier: TIER.HIGH, level: 'advanced', url: 'https://www.offsec.com/courses/pen-200/' },
         ],
@@ -358,7 +358,7 @@ const TRACKS = {
         skills: ['IAM least privilege', 'Encryption & key management', 'Cloud logging & monitoring', 'Misconfiguration auditing'],
         free: [
           { name: 'AWS Well-Architected — Security Pillar', url: 'https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html', note: 'Free best-practice guide' },
-          { name: 'flAWS / flAWS2 cloud CTF', url: 'https://flaws.cloud/', note: 'Free cloud-hacking labs' },
+          { name: 'flAWS / flAWS2 cloud CTF', url: 'http://flaws.cloud/', note: 'Free cloud-hacking labs' },
           { name: 'CloudGoat (Rhino Security Labs)', url: 'https://github.com/RhinoSecurityLabs/cloudgoat', note: 'Deliberately vulnerable AWS' },
         ],
         paid: [
