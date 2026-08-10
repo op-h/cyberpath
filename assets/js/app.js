@@ -1148,6 +1148,13 @@
   // on GitHub Pages project sites). Makes the footer's "works offline" claim true.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+    // When a NEW sw takes control after a deploy, reload once so the visitor immediately gets
+    // the fresh assets instead of being pinned to the previously-cached version. Only fire for
+    // returning visitors (a controller already existed) — first-timers already get fresh files.
+    var hadController = !!navigator.serviceWorker.controller, swReloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (swReloaded || !hadController) return; swReloaded = true; window.location.reload();
+    });
   }
 
   // Re-render on language switch so dynamic (JS-built) strings pick up the new language.
