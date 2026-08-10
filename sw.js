@@ -1,14 +1,17 @@
 /*
- * CYBERPATH service worker — offline-first for same-origin assets.
- * Bump CACHE on every deploy to invalidate (no build step, so this is manual).
- * Third-party links (TryHackMe, YouTube, …) are never intercepted — they open to
- * the live web in new tabs.
+ * CYBERPATH service worker — network-first with offline fallback.
+ * Strategy: always try the network first so visitors get the latest deploy immediately,
+ * and fall back to the cache only when offline. (The previous cache-first strategy could
+ * pin visitors to a stale version until CACHE was manually bumped.)
+ * Bump CACHE on every deploy so the old cache is purged on activate.
+ * Third-party links (TryHackMe, YouTube, …) are never intercepted — they open to the live web.
  */
-var CACHE = 'cyberpath-v4';
+var CACHE = 'cyberpath-v5';
 var ASSETS = [
   './', './index.html',
   './assets/css/styles.css',
-  './assets/js/data.js', './assets/js/match.js', './assets/js/app.js',
+  './assets/js/data.js', './assets/js/match.js',
+  './assets/js/i18n-content.js', './assets/js/i18n.js', './assets/js/app.js',
   './manifest.webmanifest',
   './assets/img/icon-192.png', './assets/img/icon-512.png'
 ];
@@ -29,17 +32,18 @@ self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== location.origin) return; // never touch third-party requests
+  // Network-first: fresh content when online, cached copy when offline.
   e.respondWith(
-    caches.match(req).then(function (hit) {
-      return hit || fetch(req).then(function (res) {
-        // Only cache successful, same-origin ("basic") responses — never 404s/opaque.
-        if (res && res.ok && res.type === 'basic') {
-          var copy = res.clone();
-          caches.open(CACHE).then(function (c) { c.put(req, copy); });
-        }
-        return res;
-      }).catch(function () {
-        if (req.mode === 'navigate') return caches.match('./index.html');
+    fetch(req).then(function (res) {
+      // Cache successful, same-origin ("basic") responses for offline use — never 404s/opaque.
+      if (res && res.ok && res.type === 'basic') {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+      }
+      return res;
+    }).catch(function () {
+      return caches.match(req).then(function (hit) {
+        return hit || (req.mode === 'navigate' ? caches.match('./index.html') : Response.error());
       });
     })
   );
