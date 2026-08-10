@@ -898,7 +898,7 @@
     var stats = [
       [fmtTotal(plan.months), jobLabel, true],
       [String(plan.phases.length), plan.phases.length === 1 ? T('st.phase','phase') : T('st.phases','phases'), false],
-      ['~' + totalHours + '\u00a0' + T('unit.h','h'), T('st.hours','total study time'), false],
+      ['~' + totalHours + ' ' + T('unit.h','h'), T('st.hours','total study time'), false],
       [certCount ? String(certCount) : '—', certCount ? T('st.certsMapped','certifications mapped') : T('st.skillsFirst','skills-first (no certs)'), false],
     ].map(function (s) {
       return '<div class="stat' + (s[2] ? ' stat--lead' : '') + '"><div class="stat__num">' + esc(s[0]) + '</div><div class="stat__label">' + esc(s[1]) + '</div></div>';

@@ -361,7 +361,7 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: var(--sp-4);
   }
-  .stat__num { font-family: var(--font-mono); font-size: var(--step-2); color: var(--accent); font-weight: 800; overflow-wrap: normal; }
+  .stat__num { font-family: var(--font-mono); font-size: var(--step-1); color: var(--accent); font-weight: 800; overflow-wrap: normal; }
   .stat__label { color: var(--muted); font-size: var(--step--1); margin-top: .2rem; }
 
   /* Timeline of phases — a real roadmap: a spine with tier-coloured nodes. */
@@ -507,9 +507,12 @@
   .stat:hover { border-color: var(--border-strong); }
   .plan-summary > .stat--lead { grid-column: span 2; }
   .plan-summary > .stat--lead::before { background: var(--accent); opacity: 1; height: 3px; }
-  /* direction:ltr keeps the range as "4–5" not "5–4"; text-wrap:balance is deliberately
-     omitted here — on mixed Arabic+digit content it can reorder the bidi run. */
-  .plan-summary > .stat--lead .stat__num { font-size: clamp(1.7rem, 8cqi, 2.4rem); line-height: 1.05; direction: ltr; }
+  /* text-wrap:balance is deliberately omitted — on mixed Arabic+digit content it reorders
+     the bidi run. Direction stays natural (RTL in AR): the range is LTR-isolated in JS. */
+  .plan-summary > .stat--lead .stat__num { font-size: clamp(1.7rem, 8cqi, 2.4rem); line-height: 1.05; }
+  /* Non-lead tiles are narrow; keep "~500 ساعة" on one line inside the box by scaling the
+     number down a touch and never wrapping between digits and their Arabic unit word. */
+  .plan-summary > .stat:not(.stat--lead) .stat__num { font-size: clamp(1.05rem, .9rem + .55vw, 1.35rem); white-space: nowrap; }
   @media (max-width: 460px) { .plan-summary > .stat--lead { grid-column: auto; } }
 
   /* Timeline colour key. */
@@ -828,11 +831,11 @@
      only orders correctly in the natural RTL flow; forcing ltr scrambles it. */
   [dir="rtl"] .term__body, [dir="rtl"] .build-log, [dir="rtl"] .pathnet__idx,
   [dir="rtl"] .cert__price, [dir="rtl"] .match__bars li,
-  [dir="rtl"] .hero__stats strong, [dir="rtl"] .stat__num, [dir="rtl"] .lang-glitch__rain { direction: ltr; }
-  [dir="rtl"] .hero__stats li, [dir="rtl"] .stat, [dir="rtl"] .cert__lvl { text-align: start; }
-  /* The number keeps LTR content order, but must align to the RTL start (right) so it lines
-     up with its Arabic label underneath — otherwise digits sit left, label sits right. */
-  [dir="rtl"] .stat__num, [dir="rtl"] .hero__stats strong { text-align: right; }
+  [dir="rtl"] .hero__stats strong, [dir="rtl"] .lang-glitch__rain { direction: ltr; }
+  /* .stat__num stays natural RTL so it aligns to the start (right) under its Arabic label and
+     single-digit ranges don't flip; the numeric run itself is LTR-isolated in JS (lri/fmtTotal). */
+  [dir="rtl"] .hero__stats li, [dir="rtl"] .stat, [dir="rtl"] .stat__num, [dir="rtl"] .cert__lvl { text-align: start; }
+  [dir="rtl"] .hero__stats strong { text-align: right; }
   [dir="rtl"] .tweak select { background-position: left .7rem center; }
 }
 
