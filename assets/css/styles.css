@@ -308,13 +308,13 @@
 
 /* ---------- LAYOUT ---------- */
 @layer layout {
-  /* No chrome bar: the brand + controls sit transparently at the top of the canvas and
-     scroll with the page, blending into the design instead of a distinct header bar. */
+  /* No chrome bar: brand + controls sit transparently at the true left/right edges of the
+     page (not inset to the content column) and scroll with the page — blended, not a bar. */
   .site-header {
     display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
     background: transparent; border: 0;
     padding-block: var(--sp-4) var(--sp-2);
-    padding-inline: max(var(--sp-4), calc((100% - var(--maxw)) / 2));
+    padding-inline: clamp(var(--sp-3), 2.5vw, var(--sp-5));
   }
   main { display: block; }
   section { padding-inline: var(--sp-4); }
@@ -344,11 +344,12 @@
 /* ---------- COMPONENTS ---------- */
 @layer components {
 
-  /* Brand + theme toggle */
-  .brand { display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; font-weight: 800; direction: ltr; }
-  .brand__mark { font-family: var(--font-mono); color: var(--accent); font-size: 1.15em; }
-  .brand__name { letter-spacing: .04em; font-size: 1.05rem; }
+  /* Brand — understated terminal wordmark that blends into the mono design. */
+  .brand { display: inline-flex; align-items: center; gap: .5ch; text-decoration: none; font-family: var(--font-mono); font-weight: 700; direction: ltr; }
+  .brand__mark { color: var(--accent); font-size: 1.05em; }
+  .brand__name { letter-spacing: .04em; font-size: .95rem; color: var(--text-hi); }
   .brand__accent { color: var(--accent); }
+  .brand:hover .brand__name { color: var(--text); }
   /* Minimal, borderless controls that blend into the canvas; light up on interaction. */
   .theme-toggle {
     display: inline-flex; align-items: center; gap: .45rem;
@@ -994,7 +995,30 @@
   [dir="rtl"] .hero__stats li, [dir="rtl"] .stat, [dir="rtl"] .stat__num, [dir="rtl"] .cert__lvl { text-align: start; }
   [dir="rtl"] .hero__stats strong { text-align: right; }
   [dir="rtl"] .tweak select { background-position: left .7rem center; }
-}
+
+  /* Arabic polish: Latin letter-spacing (tracking, +/-) breaks Arabic's connected letters —
+     neutralise it on text elements; give Arabic headings more line-height for the taller
+     glyphs/diacritics so nothing clips. (Brand stays LTR/Latin, so it keeps its tracking.) */
+  [dir="rtl"] .eyebrow, [dir="rtl"] .badge, [dir="rtl"] .btn, [dir="rtl"] .syschip,
+  [dir="rtl"] .hero__title, [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3,
+  [dir="rtl"] .step__legend, [dir="rtl"] .plan-head__title, [dir="rtl"] .plan-head__eyebrow,
+  [dir="rtl"] .stack__name, [dir="rtl"] .option__label, [dir="rtl"] .chip, [dir="rtl"] .theme-toggle {
+    letter-spacing: normal;
+  }
+  [dir="rtl"] .hero__title { line-height: 1.28; }
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] .plan-head__title, [dir="rtl"] .step__legend { line-height: 1.32; }
+  [dir="rtl"] .hero__lede, [dir="rtl"] .step__help, [dir="rtl"] .faq p, [dir="rtl"] .site-footer { line-height: 1.85; }
+
+  /* Arabic renders poorly in the Latin monospace stack (it has no Arabic glyphs, so it
+     falls back with monospace-ish spacing). Route Arabic UI text to the sans stack, which
+     carries Noto Sans Arabic. Code / data / number runs stay mono (they're LTR anyway). */
+  [dir="rtl"] .eyebrow, [dir="rtl"] .badge, [dir="rtl"] .btn, [dir="rtl"] .pricepill,
+  [dir="rtl"] .stack__name, [dir="rtl"] .stack__desc, [dir="rtl"] .chip, [dir="rtl"] .syschip,
+  [dir="rtl"] .theme-toggle, [dir="rtl"] .plan-head__eyebrow, [dir="rtl"] .wizard__lean,
+  [dir="rtl"] .wizard__progress-text, [dir="rtl"] .plan-progress__text, [dir="rtl"] .celebrate__msg,
+  [dir="rtl"] .tweak__k, [dir="rtl"] .plan-progress__text, [dir="rtl"] .cert__lvl {
+    font-family: var(--font-sans);
+  }
 
 /* ---------- PRINT (this is the "download as PDF" path) ---------- */
 @layer print {
