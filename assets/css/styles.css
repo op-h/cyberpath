@@ -28,9 +28,11 @@
 /* ---------- TOKENS ---------- */
 @layer tokens {
   :root {
-    /* type */
-    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --font-mono: ui-monospace, "Cascadia Code", "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+    /* type — self-contained system stacks (no external font requests).
+       Arabic is routed to --font-display (system Arabic); the mono stack is Latin. */
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+    --font-display: var(--font-sans);
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "DejaVu Sans Mono", "Liberation Mono", Consolas, "Courier New", monospace;
 
     /* fluid scale */
     --step--1: clamp(.83rem, .8rem + .15vw, .9rem);
@@ -56,52 +58,78 @@
     color-scheme: dark;
   }
 
-  /* DARK (default) — cool near-black neutral ramp; green is a scalpel, not a wash. */
+  /* DARK (default) — "HTB tone in Vercel/Linear structure": near-black canvas,
+     hairline borders, lime accent, blueprint grid, six hue-separated category badges. */
   :root, :root[data-theme="dark"] {
-    --bg: #0c111b;              /* softer slate than pure hacker-black — leans INE */
-    --bg-grid: rgba(108,182,255,.03);
-    --surface: #131a26;
-    --surface-2: #1a2230;
-    --surface-3: #232d3d;
-    --border: #263143;
-    --border-strong: #36455a;
-    --text: #e8edf3;
-    --muted: #a2adba;        /* ~8.5:1 on --bg */
-    --faint: #8794a1;        /* labels; ~5.2:1 on surface-2 */
-    --accent: #9fef00;        /* HTB green — the one identity colour */
-    --accent-hover: #b6f53a;
-    --accent-ink: #0a0e14;    /* text on accent fills */
-    --accent-soft: rgba(159,239,0,.10);
-    --accent-2: #6cb6ff;      /* links + info ONLY (aliased below) */
+    --bg: #0a0b0d;             /* near-black canvas */
+    --bg-grid: rgba(138,240,74,.035);   /* faint green-tinted blueprint grid */
+    --surface: #101216;        /* cards, table, inputs */
+    --surface-2: #16191e;      /* hovered rows / dropdowns / elevated */
+    --surface-3: #1e2228;
+    --elevated: #16191e;
+    --sunken: #060708;         /* code wells */
+    --border: #23262c;         /* default hairline */
+    --border-strong: #2f333b;
+    --border-green: color-mix(in srgb, #8af04a 22%, transparent);  /* green row dividers */
+    --text: #e9ebee;
+    --text-hi: #c9ced6;        /* mono names — slightly cooler than body */
+    --muted: #9aa0aa;          /* ~7:1 on --bg */
+    --faint: #767d88;          /* labels; ~4.6:1 on --bg (AA) */
+    --idx: #5c626c;            /* decorative 01..07 indices */
+    --accent: #8af04a;         /* lime — the one identity colour */
+    --accent-hover: #74d63a;   /* darker on hover for lime fills */
+    --accent-press: #63bb30;
+    --accent-ink: #0a0b0d;     /* text on accent fills (~9:1) */
+    --accent-soft: rgba(138,240,74,.10);
+    --accent-glow: rgba(138,240,74,.22);   /* focus glow */
+    --accent-2: #6cb6ff;       /* links + info ONLY */
     --link: #6cb6ff;
     --accent-2-soft: rgba(108,182,255,.10);
-    --ok: #4ec97a;
-    --warn: #e3a008;
-    --focus: #9fef00;
-    /* Gradient is no longer decoration: flat green so nothing reads "rainbow". */
+    --ok: #34d371;
+    --warn: #f59e0b;
+    --focus: #8af04a;
     --grad: linear-gradient(90deg, var(--accent), var(--accent));
 
-    /* Cost ladder: no rainbow — free=ok, low=neutral, mid=warn, high=danger. */
-    --tier-free: #4ec97a; --tier-low: #a2adba; --tier-mid: #e3a008; --tier-high: #ff7b72;
+    /* Cost ladder: free=ok, low=neutral, mid=warn, high=danger. */
+    --tier-free: #34d371; --tier-low: #9aa0aa; --tier-mid: #f59e0b; --tier-high: #ff7b72;
 
-    /* Neutral elevation — NO colour in shadows. */
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.32);
-    --shadow: 0 4px 14px -6px rgba(0,0,0,.5), 0 2px 4px -2px rgba(0,0,0,.4);
-    --shadow-lg: 0 18px 40px -18px rgba(0,0,0,.62);
+    /* Six category badge colours — {border, text, subtle-bg}, tuned for near-black.
+       Badge-green is emerald, hue-separated from the lime accent so it never reads
+       as an interactive element. */
+    --badge-red-bd: #7f2a2a;    --badge-red-tx: #f8a3a3;    --badge-red-bg: rgba(239,68,68,.10);
+    --badge-green-bd: #2f7a3f;  --badge-green-tx: #8ff0ab;  --badge-green-bg: rgba(52,211,113,.10);
+    --badge-blue-bd: #2a5a8f;   --badge-blue-tx: #95c5fb;   --badge-blue-bg: rgba(59,130,246,.10);
+    --badge-indigo-bd: #403f9c; --badge-indigo-tx: #b0b4fc; --badge-indigo-bg: rgba(99,102,241,.11);
+    --badge-amber-bd: #8a6220;  --badge-amber-tx: #f6cf6a;  --badge-amber-bg: rgba(245,158,11,.11);
+    --badge-neutral-bd: #3a3f47;--badge-neutral-tx: #c2c8d0;--badge-neutral-bg: rgba(160,170,185,.08);
+
+    /* Neutral elevation — NO colour in shadows (borders carry structure). */
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow: 0 4px 14px -6px rgba(0,0,0,.55), 0 2px 4px -2px rgba(0,0,0,.45);
+    --shadow-lg: 0 18px 40px -18px rgba(0,0,0,.66);
   }
 
-  /* LIGHT */
+  /* LIGHT — same structure, light values; badges re-tuned for near-white. */
   :root[data-theme="light"] {
     color-scheme: light;
-    --bg: #f5f7f9; --bg-grid: rgba(47,107,0,.05);
+    --bg: #f5f7f9; --bg-grid: rgba(47,107,0,.06);
     --surface: #ffffff; --surface-2: #eef1f4; --surface-3: #e2e7ec;
+    --elevated: #eef1f4; --sunken: #e8ecf0;
     --border: #dce2e8; --border-strong: #c1cad3;
-    --text: #0e141b; --muted: #4f5a66; --faint: #5c6772;
-    --accent: #2f6b00; --accent-hover: #276000; --accent-ink: #ffffff; --accent-soft: rgba(47,107,0,.10);
+    --border-green: color-mix(in srgb, #2f6b00 22%, transparent);
+    --text: #0e141b; --text-hi: #0e141b; --muted: #4f5a66; --faint: #5c6772; --idx: #94a0ab;
+    --accent: #2f6b00; --accent-hover: #276000; --accent-press: #1f4d00; --accent-ink: #ffffff;
+    --accent-soft: rgba(47,107,0,.10); --accent-glow: rgba(47,107,0,.28);
     --accent-2: #0a5fd0; --link: #0a5fd0; --accent-2-soft: rgba(10,95,208,.09);
     --ok: #1a7f37; --warn: #8a5a00; --focus: #0a5fd0;
     --grad: linear-gradient(90deg, var(--accent), var(--accent));
     --tier-free: #1a7f37; --tier-low: #4f5a66; --tier-mid: #8a5a00; --tier-high: #b42318;
+    --badge-red-bd: #e0b4b4; --badge-red-tx: #b42318; --badge-red-bg: rgba(239,68,68,.10);
+    --badge-green-bd: #a8d8b4; --badge-green-tx: #1a7f37; --badge-green-bg: rgba(52,160,88,.12);
+    --badge-blue-bd: #aecbf0; --badge-blue-tx: #0a5fd0; --badge-blue-bg: rgba(10,95,208,.09);
+    --badge-indigo-bd: #c0c2f0; --badge-indigo-tx: #4a45c8; --badge-indigo-bg: rgba(99,102,241,.10);
+    --badge-amber-bd: #e6cf9a; --badge-amber-tx: #8a5a00; --badge-amber-bg: rgba(180,120,0,.12);
+    --badge-neutral-bd: #c9d0d8; --badge-neutral-tx: #4f5a66; --badge-neutral-bg: rgba(80,90,100,.06);
     --shadow-sm: 0 1px 2px rgba(16,22,29,.06);
     --shadow: 0 6px 20px -10px rgba(16,22,29,.15);
     --shadow-lg: 0 20px 48px -20px rgba(16,22,29,.2);
@@ -110,15 +138,24 @@
   @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
       color-scheme: light;
-      --bg: #f5f7f9; --bg-grid: rgba(47,107,0,.05);
+      --bg: #f5f7f9; --bg-grid: rgba(47,107,0,.06);
       --surface: #ffffff; --surface-2: #eef1f4; --surface-3: #e2e7ec;
+      --elevated: #eef1f4; --sunken: #e8ecf0;
       --border: #dce2e8; --border-strong: #c1cad3;
-      --text: #0e141b; --muted: #4f5a66; --faint: #5c6772;
-      --accent: #2f6b00; --accent-hover: #276000; --accent-ink: #ffffff; --accent-soft: rgba(47,107,0,.10);
+      --border-green: color-mix(in srgb, #2f6b00 22%, transparent);
+      --text: #0e141b; --text-hi: #0e141b; --muted: #4f5a66; --faint: #5c6772; --idx: #94a0ab;
+      --accent: #2f6b00; --accent-hover: #276000; --accent-press: #1f4d00; --accent-ink: #ffffff;
+      --accent-soft: rgba(47,107,0,.10); --accent-glow: rgba(47,107,0,.28);
       --accent-2: #0a5fd0; --link: #0a5fd0; --accent-2-soft: rgba(10,95,208,.09);
       --ok: #1a7f37; --warn: #8a5a00; --focus: #0a5fd0;
       --grad: linear-gradient(90deg, var(--accent), var(--accent));
       --tier-free: #1a7f37; --tier-low: #4f5a66; --tier-mid: #8a5a00; --tier-high: #b42318;
+      --badge-red-bd: #e0b4b4; --badge-red-tx: #b42318; --badge-red-bg: rgba(239,68,68,.10);
+      --badge-green-bd: #a8d8b4; --badge-green-tx: #1a7f37; --badge-green-bg: rgba(52,160,88,.12);
+      --badge-blue-bd: #aecbf0; --badge-blue-tx: #0a5fd0; --badge-blue-bg: rgba(10,95,208,.09);
+      --badge-indigo-bd: #c0c2f0; --badge-indigo-tx: #4a45c8; --badge-indigo-bg: rgba(99,102,241,.10);
+      --badge-amber-bd: #e6cf9a; --badge-amber-tx: #8a5a00; --badge-amber-bg: rgba(180,120,0,.12);
+      --badge-neutral-bd: #c9d0d8; --badge-neutral-tx: #4f5a66; --badge-neutral-bg: rgba(80,90,100,.06);
       --shadow-sm: 0 1px 2px rgba(16,22,29,.06);
       --shadow: 0 6px 20px -10px rgba(16,22,29,.15);
       --shadow-lg: 0 20px 48px -20px rgba(16,22,29,.2);
@@ -132,16 +169,25 @@
     font-family: var(--font-sans);
     font-size: var(--step-0);
     color: var(--text);
+    /* Blueprint grid: 1px lines on a 32px cell, faint + green-tinted, plus one soft
+       accent glow at the top-right. If the grid is the first thing you notice it's too
+       strong — alpha stays ≤ .05. */
     background:
-      radial-gradient(1200px 600px at 85% -10%, var(--accent-soft), transparent 60%),
-      radial-gradient(var(--bg-grid) 1px, transparent 1.5px) 0 0 / 32px 32px,
+      radial-gradient(1100px 560px at 88% -12%, var(--accent-soft), transparent 62%),
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
       var(--bg);
-    background-attachment: fixed, fixed, fixed;
+    background-attachment: fixed, fixed, fixed, fixed;
   }
   /* Fixed backgrounds force full-viewport repaints on every scroll frame on
-     touch devices — drop the parallax there to protect scroll/INP. */
+     touch devices — drop the parallax there to protect scroll/INP, and calm the
+     grid further on small screens so it never competes with text. */
   @media (pointer: coarse) {
-    body { background-attachment: scroll, scroll, scroll; }
+    body { background-attachment: scroll, scroll, scroll, scroll; }
+  }
+  @media (max-width: 640px) {
+    body { --bg-grid: rgba(138,240,74,.022); background-size: auto, 28px 28px, 28px 28px, auto; }
+    :root[data-theme="light"] body, :root:not([data-theme="dark"]) body { --bg-grid: rgba(47,107,0,.04); }
   }
   /* Defensive wrap: injected plan content can carry long tokens/URLs. */
   .phase, .cert, .cert__name, .callout, .stat__num, .res-list, .phase__list li, .plan-head__title {
@@ -165,6 +211,75 @@
   }
   .skip-link:focus { transform: translateY(0); }
   .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* Baseline focus ring: solid 2px accent outline, WCAG 2.2 focus-appearance-safe on
+     every surface + over the grid. :where() = 0 specificity, so component-specific
+     focus styles still win where defined. */
+  :where(a, button, input, select, textarea, summary, [tabindex="0"]):focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px;
+  }
+}
+
+/* ---------- FINGERPRINT: blueprint-grid / terminal design language ---------- */
+@layer components {
+  /* Rainbow hairline pinned to the viewport bottom (decorative; below focus rings). */
+  .rainbow-rule {
+    position: fixed; inset-inline: 0; inset-block-end: 0; block-size: 3px; z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(90deg, #ff5b5b, #ffb648, #8af04a, #43c6ff, #7b7bff, #c86bff);
+  }
+
+  /* Uppercase mono eyebrow with a square bullet (▪ THE STACK). */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: .75ch;
+    font-family: var(--font-mono); font-size: var(--step--1); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .18em; color: var(--accent);
+  }
+  .eyebrow::before { content: "▪"; color: var(--accent); }
+
+  /* Colored category badge / tag. */
+  .badge {
+    display: inline-flex; align-items: center; gap: .5ch; white-space: nowrap;
+    padding: 3px 9px; border-radius: var(--radius-pill);
+    font-family: var(--font-mono); font-size: .68rem; font-weight: 700; line-height: 1.4;
+    text-transform: uppercase; letter-spacing: .06em; border: 1px solid;
+    font-variant-numeric: tabular-nums;
+  }
+  .badge--red    { color: var(--badge-red-tx);    border-color: var(--badge-red-bd);    background: var(--badge-red-bg); }
+  .badge--green  { color: var(--badge-green-tx);  border-color: var(--badge-green-bd);  background: var(--badge-green-bg); }
+  .badge--blue   { color: var(--badge-blue-tx);   border-color: var(--badge-blue-bd);   background: var(--badge-blue-bg); }
+  .badge--indigo { color: var(--badge-indigo-tx); border-color: var(--badge-indigo-bd); background: var(--badge-indigo-bg); }
+  .badge--amber  { color: var(--badge-amber-tx);  border-color: var(--badge-amber-bd);  background: var(--badge-amber-bg); }
+  .badge--neutral{ color: var(--badge-neutral-tx);border-color: var(--badge-neutral-bd);background: var(--badge-neutral-bg); }
+
+  /* Signature module: the numbered "stack" table. */
+  .stack { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); overflow: hidden; }
+  .stack__row {
+    display: grid; grid-template-columns: 3ch 1fr auto; gap: var(--sp-3); align-items: center;
+    padding: var(--sp-3) var(--sp-4); border-block-start: 1px solid var(--border-green);
+    text-decoration: none; color: inherit; transition: background var(--transition);
+  }
+  .stack__row:first-child { border-block-start: 0; }
+  a.stack__row:hover { background: var(--elevated); }
+  a.stack__row:hover .stack__name { color: var(--accent); }
+  .stack__idx { font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--idx); font-variant-numeric: tabular-nums; }
+  .stack__main { min-width: 0; }
+  .stack__name { display: block; font-family: var(--font-mono); font-weight: 700; font-size: var(--step-0); color: var(--text-hi); line-height: 1.25; }
+  .stack__desc { display: block; font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); margin-top: 3px; line-height: 1.35; overflow-wrap: anywhere; }
+
+  /* Price pill: old → new (before/after). */
+  .pricepill {
+    display: inline-flex; align-items: center; gap: 1ch; font-family: var(--font-mono);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-pill);
+    padding: .5rem 1rem; background: var(--surface);
+  }
+  .pricepill__old { color: var(--tier-high); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--tier-high) 60%, transparent); font-size: var(--step--1); }
+  .pricepill__arrow { color: var(--faint); }
+  .pricepill__new { color: var(--accent); font-weight: 700; font-size: var(--step-0); }
+
+  /* System-spec corner badge (■ STATIC · OFFLINE · NO ACCOUNT). */
+  .syschip { display: inline-flex; align-items: center; gap: .6ch; font-family: var(--font-mono); font-size: var(--step--1); color: var(--faint); letter-spacing: .02em; }
+  .syschip::before { content: "■"; color: var(--accent); font-size: .8em; }
 }
 
 /* ---------- LAYOUT ---------- */
@@ -224,7 +339,8 @@
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
     min-height: 44px; padding: .7rem 1.25rem; border-radius: var(--radius-sm);
-    font-weight: 700; text-decoration: none; border: 1px solid transparent;
+    font-family: var(--font-mono); font-weight: 700; letter-spacing: .01em;
+    text-decoration: none; border: 1px solid transparent;
     transition: transform var(--transition), background var(--transition), border-color var(--transition);
   }
   .btn:hover { text-decoration: none; }
@@ -246,13 +362,12 @@
   .hero__inner { max-width: 640px; }
   .hero > * { min-width: 0; }          /* grid children may shrink; terminal <pre> can't widen the page */
   .hero__lede { overflow-wrap: anywhere; }
-  .hero__eyebrow {
-    font-family: var(--font-mono); font-size: var(--step--1);
-    color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin-bottom: var(--sp-3);
-  }
-  .hero__title { font-size: var(--step-4); font-weight: 700; letter-spacing: -.035em; }
+  .hero__eyebrow { margin-bottom: var(--sp-3); }
+  .hero__title { font-family: var(--font-display); font-size: var(--step-4); font-weight: 800; letter-spacing: -.035em; }
   .hero__lede { margin-top: var(--sp-3); color: var(--muted); font-size: var(--step-1); max-width: 52ch; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-5); }
+  .hero__pricepill { margin-top: var(--sp-4); }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-4); }
+  .hero__syschip { margin-top: var(--sp-4); }
   .hero__stats {
     display: flex; flex-wrap: wrap; gap: var(--sp-5); margin-top: var(--sp-5);
     padding-top: var(--sp-4); border-top: 1px solid var(--border);
@@ -262,7 +377,17 @@
   .hero__stats li:first-child strong { color: var(--accent); }  /* one green accent, not three */
   .hero__stats span { color: var(--muted); font-size: var(--step--1); }
 
-  /* Terminal card */
+  /* Hero aside — the numbered tracks stack table (signature module). */
+  .hero__aside { position: relative; align-self: start; }
+  .hero__aside .eyebrow { margin-bottom: var(--sp-3); }
+  .hero__aside::before {
+    content: ""; position: absolute; z-index: -1; inset: 6% -6% 26% -6%;
+    border-radius: 50%; background: radial-gradient(closest-side, var(--accent-soft), transparent);
+    filter: blur(40px); pointer-events: none;
+  }
+  .hero__aside .stack { box-shadow: var(--shadow); }
+
+  /* Terminal card (still used by the build-sequence loader) */
   .hero__terminal { position: relative; }
   .hero__terminal::before {
     content: ""; position: absolute; z-index: -1; inset: -14% 0 30%;

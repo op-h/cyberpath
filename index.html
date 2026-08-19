@@ -78,7 +78,7 @@
     <!-- HERO -->
     <section class="hero" id="hero" aria-labelledby="hero-title">
       <div class="hero__inner">
-        <p class="hero__eyebrow" data-i18n="hero.eyebrow">Your route into cybersecurity, mapped</p>
+        <p class="eyebrow hero__eyebrow" data-i18n="hero.eyebrow">Your route into cybersecurity, mapped</p>
         <h1 class="hero__title" id="hero-title">
           <span data-i18n="hero.title.a">Stop guessing.</span><br><span data-i18n="hero.title.b">Get a </span><span class="grad" data-i18n="hero.title.c">real roadmap.</span>
         </h1>
@@ -87,6 +87,13 @@
           realistic timeframes, the certifications worth chasing, and resources tuned
           to your budget — free or paid. Then download it.
         </p>
+
+        <p class="pricepill hero__pricepill">
+          <span class="pricepill__old" data-i18n="hero.price.old">Paid roadmap apps</span>
+          <span class="pricepill__arrow" aria-hidden="true">→</span>
+          <span class="pricepill__new" data-i18n="hero.price.new">$0 · forever</span>
+        </p>
+
         <div class="hero__actions">
           <button type="button" class="btn btn--primary btn--lg" id="start-btn">
             <span data-i18n="hero.cta">Build my roadmap</span> <span aria-hidden="true">→</span>
@@ -105,22 +112,44 @@
           <li><strong>20+</strong><span data-i18n="hero.stat.certs">certifications mapped</span></li>
           <li><strong>Free</strong><span data-i18n="hero.stat.res">&amp; paid resources</span></li>
         </ul>
+        <p class="syschip hero__syschip" data-i18n="hero.sys">NO ACCOUNT · WORKS OFFLINE · NO TRACKING</p>
       </div>
 
-      <div class="hero__terminal" aria-hidden="true">
-        <div class="term">
-          <div class="term__bar"><span></span><span></span><span></span></div>
-          <pre class="term__body"><code><span class="c-mut">root@cyberpath</span>:<span class="c-acc">~</span>$ ./plan --interactive
-<span class="c-dim">[*]</span> profiling learner...
-<span class="c-dim">[*]</span> track      = <span class="c-acc">offensive</span>
-<span class="c-dim">[*]</span> level      = beginner
-<span class="c-dim">[*]</span> hours/week = 8
-<span class="c-dim">[*]</span> budget     = mixed
-<span class="c-ok">[+]</span> plan ready: <span class="c-acc">7 phases · ~14 months</span>
-<span class="c-ok">[+]</span> certs: eJPT → CPTS → OSCP
-<span class="c-mut">root@cyberpath</span>:<span class="c-acc">~</span>$ <span class="term__cursor" aria-hidden="true"></span></code></pre>
-        </div>
-      </div>
+      <aside class="hero__aside" aria-labelledby="hero-stack-label">
+        <p class="eyebrow" id="hero-stack-label" data-i18n="hero.stack.label">The tracks</p>
+        <nav class="stack" id="hero-stack" aria-label="Cybersecurity career tracks">
+          <a class="stack__row" href="#tracks-static">
+            <span class="stack__idx" aria-hidden="true">01</span>
+            <span class="stack__main"><span class="stack__name" data-i18n="trk.offensive.name">Offensive / Pentesting</span><span class="stack__desc" data-i18n="hero.trk.offensive">Break in — ethical hacking &amp; red teaming</span></span>
+            <span class="badge badge--red" data-i18n="badge.offensive">Offensive</span>
+          </a>
+          <a class="stack__row" href="#tracks-static">
+            <span class="stack__idx" aria-hidden="true">02</span>
+            <span class="stack__main"><span class="stack__name" data-i18n="trk.defensive.name">Defensive / Blue Team</span><span class="stack__desc" data-i18n="hero.trk.defensive">Detect &amp; respond — SOC, hunting, IR</span></span>
+            <span class="badge badge--blue" data-i18n="badge.defensive">Blue Team</span>
+          </a>
+          <a class="stack__row" href="#tracks-static">
+            <span class="stack__idx" aria-hidden="true">03</span>
+            <span class="stack__main"><span class="stack__name" data-i18n="trk.grc.name">Governance, Risk &amp; Compliance</span><span class="stack__desc" data-i18n="hero.trk.grc">Security as a business function</span></span>
+            <span class="badge badge--indigo" data-i18n="badge.grc">GRC</span>
+          </a>
+          <a class="stack__row" href="#tracks-static">
+            <span class="stack__idx" aria-hidden="true">04</span>
+            <span class="stack__main"><span class="stack__name" data-i18n="trk.cloud.name">Cloud Security</span><span class="stack__desc" data-i18n="hero.trk.cloud">Secure AWS, Azure &amp; GCP</span></span>
+            <span class="badge badge--amber" data-i18n="badge.cloud">Cloud</span>
+          </a>
+          <a class="stack__row" href="#tracks-static">
+            <span class="stack__idx" aria-hidden="true">05</span>
+            <span class="stack__main"><span class="stack__name" data-i18n="trk.appsec.name">Application Security</span><span class="stack__desc" data-i18n="hero.trk.appsec">Secure code &amp; CI/CD pipelines</span></span>
+            <span class="badge badge--green" data-i18n="badge.appsec">AppSec</span>
+          </a>
+          <a class="stack__row" href="#tracks-static">
+            <span class="stack__idx" aria-hidden="true">06</span>
+            <span class="stack__main"><span class="stack__name" data-i18n="trk.dfir.name">Forensics &amp; Incident Response</span><span class="stack__desc" data-i18n="hero.trk.dfir">Investigate breaches &amp; malware</span></span>
+            <span class="badge badge--neutral" data-i18n="badge.dfir">DFIR</span>
+          </a>
+        </nav>
+      </aside>
     </section>
 
     <!-- WIZARD (progressively enhanced; hidden until JS + Start) -->
@@ -261,6 +290,9 @@
       </a>
     </p>
   </footer>
+
+  <!-- Decorative rainbow hairline pinned to the viewport bottom edge. -->
+  <div class="rainbow-rule" aria-hidden="true"></div>
 
   <!-- Print-only watermark; repeats on every page of the downloaded PDF. -->
   <div class="print-watermark" aria-hidden="true"><span>CYBERPATH<small>tryhackme.com/p/oph</small></span></div>
