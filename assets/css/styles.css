@@ -189,7 +189,7 @@
   .phase, .cert, .cert__name, .callout, .stat__num, .res-list, .phase__list li, .plan-head__title {
     min-width: 0; overflow-wrap: anywhere;
   }
-  html { scroll-padding-top: 4.5rem; }   /* keep anchors clear of the sticky header */
+  html { scroll-padding-top: var(--sp-3); }   /* small offset; header no longer sticky */
   h1,h2,h3 { line-height: 1.12; letter-spacing: -.02em; font-weight: 600; }
   .ico { width: 1.05em; height: 1.05em; flex: 0 0 auto; vertical-align: -0.18em; }
   h2 { font-size: var(--step-2); }
@@ -308,13 +308,12 @@
 
 /* ---------- LAYOUT ---------- */
 @layer layout {
+  /* No chrome bar: the brand + controls sit transparently at the top of the canvas and
+     scroll with the page, blending into the design instead of a distinct header bar. */
   .site-header {
     display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
-    position: sticky; top: 0; z-index: 50;
-    background: color-mix(in oklab, var(--bg) 85%, transparent);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
-    padding-block: var(--sp-3);
+    background: transparent; border: 0;
+    padding-block: var(--sp-4) var(--sp-2);
     padding-inline: max(var(--sp-4), calc((100% - var(--maxw)) / 2));
   }
   main { display: block; }
@@ -350,14 +349,17 @@
   .brand__mark { font-family: var(--font-mono); color: var(--accent); font-size: 1.15em; }
   .brand__name { letter-spacing: .04em; font-size: 1.05rem; }
   .brand__accent { color: var(--accent); }
+  /* Minimal, borderless controls that blend into the canvas; light up on interaction. */
   .theme-toggle {
-    display: inline-flex; align-items: center; gap: .5rem;
-    padding: .5rem .85rem; min-height: 44px;
-    border: 1px solid var(--border-strong); border-radius: 999px;
-    color: var(--muted); background: var(--surface); transition: var(--transition);
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem .7rem; min-height: 44px; border-radius: var(--radius-sm);
+    border: 1px solid transparent; background: transparent; color: var(--muted);
+    font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: .02em;
+    transition: var(--transition);
   }
-  .theme-toggle:hover { color: var(--text); border-color: var(--accent); }
-  .theme-toggle__icon { font-size: 1.1em; }
+  .theme-toggle:hover { color: var(--accent); background: var(--accent-soft); }
+  .theme-toggle__icon { font-size: 1.15em; color: var(--faint); transition: color var(--transition); }
+  .theme-toggle:hover .theme-toggle__icon { color: var(--accent); }
 
   /* Buttons */
   .btn {
