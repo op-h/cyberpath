@@ -214,8 +214,10 @@
   els.result.addEventListener('change', function (e) {
     var el = e.target;
     if (el && el.classList && el.classList.contains('phase__check')) {
-      setPhaseDone(progressSig(answers), el.getAttribute('data-phase'), el.checked);
-      updateCompletion();
+      var sig = progressSig(answers);
+      setPhaseDone(sig, el.getAttribute('data-phase'), el.checked);
+      var m = updateCompletion();
+      if (el.checked) celebrate(sig, m);      // reward only on completing, never on un-checking
     } else if (el && el.matches && el.matches('select[data-tweak]')) {
       var k = el.getAttribute('data-tweak');
       if (answers[k] === el.value) return;
@@ -1047,7 +1049,7 @@
 
   function updateCompletion() {
     var boxes = els.result.querySelectorAll('.phase__check');
-    if (!boxes.length) return;
+    if (!boxes.length) return null;
     var done = 0;
     Array.prototype.forEach.call(boxes, function (b) { if (b.checked) done++; });
     var total = boxes.length, pct = Math.round((done / total) * 100);
@@ -1055,6 +1057,43 @@
     var txt = byId('plan-progress-text');
     if (txt) txt.textContent = done + ' ' + T('plan.complete.a','of') + ' ' + total + ' ' + T('plan.complete.b','phases complete') + ' (' + pct + '%)';
     var wrap = byId('plan-progress'); if (wrap) wrap.setAttribute('aria-valuenow', String(pct));
+    return { done: done, total: total, pct: pct };
+  }
+
+  // Peak-end reward: fire a one-time celebration when the learner crosses a progress
+  // milestone. Guarded per-plan in localStorage so it never nags; reduced-motion-safe.
+  var CELEBRATE_KEY = 'cyberpath-celebrated';
+  function celebrate(sig, m) {
+    if (!m || !sig) return;
+    var TH = [
+      { at: 25,  key: 'celebrate.25',  en: 'Quarter way — your foundations are forming.' },
+      { at: 50,  key: 'celebrate.50',  en: 'Halfway there. The momentum is real.' },
+      { at: 75,  key: 'celebrate.75',  en: 'Three-quarters done — the finish line is in sight.' },
+      { at: 100, key: 'celebrate.100', en: 'Roadmap complete. Time to go get hired.' }
+    ];
+    var store = loadJSON(CELEBRATE_KEY) || {};
+    var seen = store[sig] || [];
+    var hit = null;
+    for (var i = 0; i < TH.length; i++) {
+      if (m.pct >= TH[i].at && seen.indexOf(TH[i].at) < 0) { seen.push(TH[i].at); hit = TH[i]; }
+    }
+    if (!hit) return;                          // nothing newly crossed
+    store[sig] = seen; saveJSON(CELEBRATE_KEY, store);
+    showCelebrate(hit.at, T(hit.key, hit.en)); // announce the highest newly-crossed
+  }
+  function showCelebrate(pct, msg) {
+    var old = byId('celebrate'); if (old) old.remove();
+    var el = document.createElement('div');
+    el.id = 'celebrate'; el.className = 'celebrate'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    var label = pct >= 100 ? '★' : pct + '%';
+    el.innerHTML = '<span class="celebrate__badge" aria-hidden="true">' + label + '</span><span class="celebrate__msg"></span>' +
+      '<button type="button" class="celebrate__x" aria-label="Dismiss">✕</button>';
+    $('.celebrate__msg', el).textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('is-on'); });
+    var kill = function () { el.classList.remove('is-on'); setTimeout(function () { if (el.parentNode) el.remove(); }, 260); };
+    $('.celebrate__x', el).addEventListener('click', kill);
+    setTimeout(kill, 5200);
   }
 
   // Download the plan as a Markdown file (great for notes / a GitHub repo).

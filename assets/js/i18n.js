@@ -35,6 +35,8 @@
     'hero.trk.appsec': 'كود آمن وخطوط CI/CD', 'hero.trk.dfir': 'حقّق بالاختراقات والبرمجيات الخبيثة',
     'badge.offensive': 'هجومي', 'badge.defensive': 'فريق أزرق', 'badge.grc': 'GRC',
     'badge.cloud': 'سحابة', 'badge.appsec': 'أمن تطبيقات', 'badge.dfir': 'DFIR',
+    'celebrate.25': 'ربع الطريق — أساسياتك بدت تتكوّن.', 'celebrate.50': 'نص الطريق. الزخم صار حقيقي.',
+    'celebrate.75': 'ثلاثة أرباع خلصت — خط النهاية قريب.', 'celebrate.100': 'الخارطة خلصت. هسّه روح دبّر شغل.',
     // browse / static
     'static.note': 'تحب تشوف الأول؟ هاي المسارات الستة. استخدم «ابنيلي خارطتي» حتى تطلع خطة مفصّلة إلك.',
     'static.heading': 'أو شوف المسارات الستة',

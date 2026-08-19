@@ -280,6 +280,32 @@
   /* System-spec corner badge (■ STATIC · OFFLINE · NO ACCOUNT). */
   .syschip { display: inline-flex; align-items: center; gap: .6ch; font-family: var(--font-mono); font-size: var(--step--1); color: var(--faint); letter-spacing: .02em; }
   .syschip::before { content: "■"; color: var(--accent); font-size: .8em; }
+
+  /* Milestone celebration toast (peak-end reward). Reduced-motion-safe. */
+  .celebrate {
+    position: fixed; inset-block-end: calc(3px + var(--sp-3)); inset-inline: 0; margin-inline: auto;
+    width: max-content; max-width: calc(100vw - 2 * var(--sp-3)); z-index: 60;
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: .7rem .8rem .7rem 1rem; border-radius: var(--radius-pill);
+    background: var(--surface-2); border: 1px solid var(--accent);
+    box-shadow: var(--shadow-lg), 0 0 0 4px var(--accent-glow);
+    opacity: 0; transform: translateY(12px); transition: opacity .22s ease, transform .22s ease;
+  }
+  .celebrate.is-on { opacity: 1; transform: none; }
+  .celebrate__badge {
+    display: grid; place-items: center; min-width: 2.1rem; height: 2.1rem; padding: 0 .5rem;
+    border-radius: var(--radius-pill); background: var(--accent); color: var(--accent-ink);
+    font-family: var(--font-mono); font-weight: 800; font-size: var(--step--1); font-variant-numeric: tabular-nums;
+  }
+  .celebrate__msg { font-family: var(--font-mono); font-size: var(--step--1); color: var(--text); }
+  .celebrate__x {
+    display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: var(--radius-pill);
+    background: transparent; border: 0; color: var(--faint); cursor: pointer; font-size: .8rem;
+  }
+  .celebrate__x:hover { color: var(--text); background: var(--surface-3); }
+  @media (prefers-reduced-motion: reduce) {
+    .celebrate { transition: none; transform: none; }
+  }
 }
 
 /* ---------- LAYOUT ---------- */
