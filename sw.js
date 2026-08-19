@@ -6,7 +6,7 @@
  * Bump CACHE on every deploy so the old cache is purged on activate.
  * Third-party links (TryHackMe, YouTube, …) are never intercepted — they open to the live web.
  */
-var CACHE = 'cyberpath-v7';
+var CACHE = 'cyberpath-v8';
 var ASSETS = [
   './', './index.html',
   './assets/css/styles.css',
