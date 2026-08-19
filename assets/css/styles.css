@@ -74,7 +74,7 @@
     --text: #e9ebee;
     --text-hi: #c9ced6;        /* mono names — slightly cooler than body */
     --muted: #9aa0aa;          /* ~7:1 on --bg */
-    --faint: #767d88;          /* labels; ~4.6:1 on --bg (AA) */
+    --faint: #7d848f;          /* labels; ~5.0:1 on --bg — AA headroom on surface-2 too */
     --idx: #5c626c;            /* decorative 01..07 indices */
     --accent: #8af04a;         /* lime — the one identity colour */
     --accent-hover: #74d63a;   /* darker on hover for lime fills */
@@ -125,7 +125,7 @@
     --grad: linear-gradient(90deg, var(--accent), var(--accent));
     --tier-free: #1a7f37; --tier-low: #4f5a66; --tier-mid: #8a5a00; --tier-high: #b42318;
     --badge-red-bd: #e0b4b4; --badge-red-tx: #b42318; --badge-red-bg: rgba(239,68,68,.10);
-    --badge-green-bd: #a8d8b4; --badge-green-tx: #1a7f37; --badge-green-bg: rgba(52,160,88,.12);
+    --badge-green-bd: #a8d8b4; --badge-green-tx: #14722e; --badge-green-bg: rgba(52,160,88,.12);
     --badge-blue-bd: #aecbf0; --badge-blue-tx: #0a5fd0; --badge-blue-bg: rgba(10,95,208,.09);
     --badge-indigo-bd: #c0c2f0; --badge-indigo-tx: #4a45c8; --badge-indigo-bg: rgba(99,102,241,.10);
     --badge-amber-bd: #e6cf9a; --badge-amber-tx: #8a5a00; --badge-amber-bg: rgba(180,120,0,.12);
@@ -151,7 +151,7 @@
       --grad: linear-gradient(90deg, var(--accent), var(--accent));
       --tier-free: #1a7f37; --tier-low: #4f5a66; --tier-mid: #8a5a00; --tier-high: #b42318;
       --badge-red-bd: #e0b4b4; --badge-red-tx: #b42318; --badge-red-bg: rgba(239,68,68,.10);
-      --badge-green-bd: #a8d8b4; --badge-green-tx: #1a7f37; --badge-green-bg: rgba(52,160,88,.12);
+      --badge-green-bd: #a8d8b4; --badge-green-tx: #14722e; --badge-green-bg: rgba(52,160,88,.12);
       --badge-blue-bd: #aecbf0; --badge-blue-tx: #0a5fd0; --badge-blue-bg: rgba(10,95,208,.09);
       --badge-indigo-bd: #c0c2f0; --badge-indigo-tx: #4a45c8; --badge-indigo-bg: rgba(99,102,241,.10);
       --badge-amber-bd: #e6cf9a; --badge-amber-tx: #8a5a00; --badge-amber-bg: rgba(180,120,0,.12);
@@ -177,13 +177,9 @@
       linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
       linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
       var(--bg);
-    background-attachment: fixed, fixed, fixed, fixed;
-  }
-  /* Fixed backgrounds force full-viewport repaints on every scroll frame on
-     touch devices — drop the parallax there to protect scroll/INP, and calm the
-     grid further on small screens so it never competes with text. */
-  @media (pointer: coarse) {
-    body { background-attachment: scroll, scroll, scroll, scroll; }
+    /* scroll (not fixed): a fixed multi-layer background repaints the whole viewport every
+       scroll frame; the repeating grid tiles seamlessly and reads identically when scrolled. */
+    background-attachment: scroll;
   }
   @media (max-width: 640px) {
     body { --bg-grid: rgba(138,240,74,.022); background-size: auto, 28px 28px, 28px 28px, auto; }
@@ -264,7 +260,7 @@
   a.stack__row:hover .stack__name { color: var(--accent); }
   .stack__idx { font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--idx); font-variant-numeric: tabular-nums; }
   .stack__main { min-width: 0; }
-  .stack__name { display: block; font-family: var(--font-mono); font-weight: 700; font-size: var(--step-0); color: var(--text-hi); line-height: 1.25; }
+  .stack__name { display: block; font-family: var(--font-mono); font-weight: 700; font-size: var(--step-0); color: var(--text-hi); line-height: 1.25; overflow-wrap: anywhere; }
   .stack__desc { display: block; font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); margin-top: 3px; line-height: 1.35; overflow-wrap: anywhere; }
 
   /* Price pill: old → new (before/after). */
@@ -275,6 +271,8 @@
   }
   .pricepill__old { color: var(--tier-high); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--tier-high) 60%, transparent); font-size: var(--step--1); }
   .pricepill__arrow { color: var(--faint); }
+  /* Physical arrow glyphs must point along the reading direction in RTL. */
+  [dir="rtl"] .pricepill__arrow { display: inline-block; transform: scaleX(-1); }
   .pricepill__new { color: var(--accent); font-weight: 700; font-size: var(--step-0); }
 
   /* System-spec corner badge (■ STATIC · OFFLINE · NO ACCOUNT). */
@@ -409,7 +407,7 @@
   .hero__aside::before {
     content: ""; position: absolute; z-index: -1; inset: 6% -6% 26% -6%;
     border-radius: 50%; background: radial-gradient(closest-side, var(--accent-soft), transparent);
-    filter: blur(40px); pointer-events: none;
+    pointer-events: none;   /* the gradient self-feathers; no blur() — keeps the LCP region cheap to raster */
   }
   .hero__aside .stack { box-shadow: var(--shadow); }
 
@@ -418,7 +416,7 @@
   .hero__terminal::before {
     content: ""; position: absolute; z-index: -1; inset: -14% 0 30%;
     border-radius: 50%; background: radial-gradient(closest-side, var(--accent-soft), transparent);
-    filter: blur(34px); pointer-events: none;
+    pointer-events: none;
   }
   .term {
     border: 1px solid var(--border-strong); border-radius: var(--radius);

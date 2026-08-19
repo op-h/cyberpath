@@ -120,7 +120,7 @@
       var certs = t.phases.reduce(function (acc, p) { return acc.concat(p.certs || []); }, [])
         .concat(t.advancedCerts || []);
       var certNames = certs.map(function (c) { return c.name; }).slice(0, 5).join(' → ');
-      return '<article class="static-card"><h3>' + esc(T('trk.' + key + '.name', t.name)) + '</h3>' +
+      return '<article class="static-card" id="track-' + key + '"><h3>' + esc(T('trk.' + key + '.name', t.name)) + '</h3>' +
         '<p>' + esc(T('trk.' + key + '.tag', t.tagline)) + '</p>' +
         '<p><strong>' + T('trk.roles', 'Roles') + ':</strong> ' + esc(T('trk.' + key + '.roles', t.roles.join(', '))) + '</p>' +
         (certNames ? '<p><strong>' + T('trk.certs', 'Certs') + ':</strong> ' + esc(certNames) + '</p>' : '') +
@@ -1093,7 +1093,8 @@
     requestAnimationFrame(function () { el.classList.add('is-on'); });
     var kill = function () { el.classList.remove('is-on'); setTimeout(function () { if (el.parentNode) el.remove(); }, 260); };
     $('.celebrate__x', el).addEventListener('click', kill);
-    setTimeout(kill, 5200);
+    // Auto-dismiss, but never yank focus off the ✕ if a keyboard user is on it.
+    setTimeout(function () { if (document.activeElement !== $('.celebrate__x', el)) kill(); }, 5200);
   }
 
   // Download the plan as a Markdown file (great for notes / a GitHub repo).

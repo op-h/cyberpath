@@ -27,7 +27,7 @@
     'hero.cta': 'ابنيلي خارطتي', 'hero.browse': 'شوف المسارات',
     'hero.noscript': 'المُخطِّط التفاعلي يحتاج جافاسكربت. بدونه تكدر تشوف المسارات الستة ومساراتها للشهادات تحت.',
     'hero.stat.tracks': 'مسارات مهنية', 'hero.stat.certs': 'شهادة مُوثّقة', 'hero.stat.res': 'مصادر مجانية ومدفوعة',
-    'hero.price.old': 'تطبيقات خرائط مدفوعة', 'hero.price.new': '$0 · للأبد',
+    'hero.price.old': 'تطبيقات خرائط مدفوعة', 'hero.price.new': '$0 · بلا رسوم', 'hero.stat.free': 'مجاني',
     'hero.sys': 'بلا حساب · يشتغل بدون نت · بلا تتبّع',
     'hero.stack.label': 'المسارات',
     'hero.trk.offensive': 'اخترق — قرصنة أخلاقية وفريق أحمر', 'hero.trk.defensive': 'اكتشف واستجب — SOC وصيد وحوادث',

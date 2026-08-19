@@ -91,7 +91,7 @@
         <p class="pricepill hero__pricepill">
           <span class="pricepill__old" data-i18n="hero.price.old">Paid roadmap apps</span>
           <span class="pricepill__arrow" aria-hidden="true">→</span>
-          <span class="pricepill__new" data-i18n="hero.price.new">$0 · forever</span>
+          <span class="pricepill__new" data-i18n="hero.price.new">$0 · no paywall</span>
         </p>
 
         <div class="hero__actions">
@@ -110,7 +110,7 @@
         <ul class="hero__stats" aria-label="What the planner covers">
           <li><strong>6</strong><span data-i18n="hero.stat.tracks">career tracks</span></li>
           <li><strong>20+</strong><span data-i18n="hero.stat.certs">certifications mapped</span></li>
-          <li><strong>Free</strong><span data-i18n="hero.stat.res">&amp; paid resources</span></li>
+          <li><strong data-i18n="hero.stat.free">Free</strong><span data-i18n="hero.stat.res">&amp; paid resources</span></li>
         </ul>
         <p class="syschip hero__syschip" data-i18n="hero.sys">NO ACCOUNT · WORKS OFFLINE · NO TRACKING</p>
       </div>
@@ -118,32 +118,32 @@
       <aside class="hero__aside" aria-labelledby="hero-stack-label">
         <p class="eyebrow" id="hero-stack-label" data-i18n="hero.stack.label">The tracks</p>
         <nav class="stack" id="hero-stack" aria-label="Cybersecurity career tracks">
-          <a class="stack__row" href="#tracks-static">
+          <a class="stack__row" href="#track-offensive">
             <span class="stack__idx" aria-hidden="true">01</span>
             <span class="stack__main"><span class="stack__name" data-i18n="trk.offensive.name">Offensive / Pentesting</span><span class="stack__desc" data-i18n="hero.trk.offensive">Break in — ethical hacking &amp; red teaming</span></span>
             <span class="badge badge--red" data-i18n="badge.offensive">Offensive</span>
           </a>
-          <a class="stack__row" href="#tracks-static">
+          <a class="stack__row" href="#track-defensive">
             <span class="stack__idx" aria-hidden="true">02</span>
             <span class="stack__main"><span class="stack__name" data-i18n="trk.defensive.name">Defensive / Blue Team</span><span class="stack__desc" data-i18n="hero.trk.defensive">Detect &amp; respond — SOC, hunting, IR</span></span>
             <span class="badge badge--blue" data-i18n="badge.defensive">Blue Team</span>
           </a>
-          <a class="stack__row" href="#tracks-static">
+          <a class="stack__row" href="#track-grc">
             <span class="stack__idx" aria-hidden="true">03</span>
             <span class="stack__main"><span class="stack__name" data-i18n="trk.grc.name">Governance, Risk &amp; Compliance</span><span class="stack__desc" data-i18n="hero.trk.grc">Security as a business function</span></span>
             <span class="badge badge--indigo" data-i18n="badge.grc">GRC</span>
           </a>
-          <a class="stack__row" href="#tracks-static">
+          <a class="stack__row" href="#track-cloud">
             <span class="stack__idx" aria-hidden="true">04</span>
             <span class="stack__main"><span class="stack__name" data-i18n="trk.cloud.name">Cloud Security</span><span class="stack__desc" data-i18n="hero.trk.cloud">Secure AWS, Azure &amp; GCP</span></span>
             <span class="badge badge--amber" data-i18n="badge.cloud">Cloud</span>
           </a>
-          <a class="stack__row" href="#tracks-static">
+          <a class="stack__row" href="#track-appsec">
             <span class="stack__idx" aria-hidden="true">05</span>
             <span class="stack__main"><span class="stack__name" data-i18n="trk.appsec.name">Application Security</span><span class="stack__desc" data-i18n="hero.trk.appsec">Secure code &amp; CI/CD pipelines</span></span>
             <span class="badge badge--green" data-i18n="badge.appsec">AppSec</span>
           </a>
-          <a class="stack__row" href="#tracks-static">
+          <a class="stack__row" href="#track-dfir">
             <span class="stack__idx" aria-hidden="true">06</span>
             <span class="stack__main"><span class="stack__name" data-i18n="trk.dfir.name">Forensics &amp; Incident Response</span><span class="stack__desc" data-i18n="hero.trk.dfir">Investigate breaches &amp; malware</span></span>
             <span class="badge badge--neutral" data-i18n="badge.dfir">DFIR</span>
@@ -200,32 +200,32 @@
 
         <noscript>
           <div class="static-grid">
-            <article class="static-card"><h3>Offensive / Pentesting</h3>
+            <article class="static-card" id="track-offensive"><h3>Offensive / Pentesting</h3>
               <p>Ethical hacking and red teaming. Path: networking &amp; Linux → web/network attacks → privilege escalation &amp; Active Directory → certification → portfolio.</p>
               <p><strong>Certs:</strong> eJPT (INE) → HTB CPTS / TCM PNPT → OffSec OSCP → OSEP/OSWE.</p>
               <p><strong>Free:</strong> TryHackMe, PortSwigger Web Security Academy, Hack The Box, OverTheWire.</p>
             </article>
-            <article class="static-card"><h3>Defensive / Blue Team (SOC)</h3>
+            <article class="static-card" id="track-defensive"><h3>Defensive / Blue Team (SOC)</h3>
               <p>Detection and response. Path: foundations → logs &amp; SIEM → incident response &amp; threat hunting → certification → home SOC lab.</p>
               <p><strong>Certs:</strong> Security+ → Microsoft SC-200 → CompTIA CySA+ / BTL1 → GIAC GCIH.</p>
               <p><strong>Free:</strong> LetsDefend, Blue Team Labs Online, CyberDefenders, Splunk free training.</p>
             </article>
-            <article class="static-card"><h3>Governance, Risk &amp; Compliance</h3>
+            <article class="static-card" id="track-grc"><h3>Governance, Risk &amp; Compliance</h3>
               <p>Security as a business function. Path: frameworks &amp; risk → audit &amp; compliance → certification → documentation portfolio.</p>
               <p><strong>Certs:</strong> ISC2 CC (often free) → Security+ → ISACA CISA / CISM → ISC2 CISSP.</p>
               <p><strong>Free:</strong> NIST CSF, ISC2 CC training, CIS Controls, SANS policy templates.</p>
             </article>
-            <article class="static-card"><h3>Cloud Security</h3>
+            <article class="static-card" id="track-cloud"><h3>Cloud Security</h3>
               <p>Securing AWS, Azure and GCP. Path: cloud fundamentals → IAM &amp; hardening → certification → secured reference deployment.</p>
               <p><strong>Certs:</strong> Microsoft SC-900 / AWS Cloud Practitioner → AZ-500 / AWS Security Specialty → SC-100 / CCSP.</p>
               <p><strong>Free:</strong> Microsoft Learn, AWS Skill Builder, flAWS/CloudGoat, AWS Well-Architected.</p>
             </article>
-            <article class="static-card"><h3>Application Security / DevSecOps</h3>
+            <article class="static-card" id="track-appsec"><h3>Application Security / DevSecOps</h3>
               <p>Securing code and pipelines. Path: OWASP Top 10 → secure code &amp; DevSecOps → certification → bug bounty portfolio.</p>
               <p><strong>Certs:</strong> Burp Suite Certified Practitioner → INE eWPT → GIAC GWEB / OffSec OSWE.</p>
               <p><strong>Free:</strong> PortSwigger Web Security Academy, OWASP Juice Shop, OWASP Cheat Sheets.</p>
             </article>
-            <article class="static-card"><h3>Digital Forensics &amp; Incident Response</h3>
+            <article class="static-card" id="track-dfir"><h3>Digital Forensics &amp; Incident Response</h3>
               <p>Investigating breaches. Path: disk/memory/log forensics → IR &amp; malware triage → certification → case portfolio.</p>
               <p><strong>Certs:</strong> Security Blue Team BTL1 → INE eCDFP → GIAC GCFA / GREM.</p>
               <p><strong>Free:</strong> Autopsy, Volatility, 13Cubed (YouTube), CyberDefenders.</p>
